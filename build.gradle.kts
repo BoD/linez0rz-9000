@@ -1,0 +1,11 @@
+plugins {
+  alias(libs.plugins.composeHotReload).apply(false)
+  alias(libs.plugins.composeMultiplatform).apply(false)
+  alias(libs.plugins.composeCompiler).apply(false)
+  alias(libs.plugins.kotlinMultiplatform).apply(false)
+}
+
+group = "org.jraf"
+version = "1.0.0"
+
+// Run `./gradlew refreshVersions` to update dependencies
