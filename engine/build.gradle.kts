@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
 }
@@ -25,7 +28,14 @@ kotlin {
       kotlin.srcDir(generateVersionKtTask)
 
       dependencies {
+        implementation(libs.kotlinx.coroutines.core)
       }
     }
+  }
+}
+
+tasks.withType<KotlinCompile>().all {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_17)
   }
 }

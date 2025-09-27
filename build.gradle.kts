@@ -7,5 +7,3 @@ plugins {
 
 group = "org.jraf"
 version = "1.0.0"
-
-// Run `./gradlew refreshVersions` to update dependencies

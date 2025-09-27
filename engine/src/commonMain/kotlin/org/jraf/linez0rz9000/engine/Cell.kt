@@ -28,5 +28,7 @@ package org.jraf.linez0rz9000.engine
 sealed interface Cell {
   object Empty : Cell
 
-  object Filled : Cell
+  object Debris : Cell
+
+  object Piece : Cell
 }

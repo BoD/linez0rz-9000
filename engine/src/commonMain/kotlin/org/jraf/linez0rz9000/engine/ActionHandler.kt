@@ -25,32 +25,12 @@
 
 package org.jraf.linez0rz9000.engine
 
-interface Board {
-  val width: Int
-  val height: Int
-  operator fun get(x: Int, y: Int): Cell
-}
-
-internal fun Board.toMutableBoard(): MutableBoard {
-  return MutableBoard(this)
-}
-
-internal class MutableBoard(
-  override val width: Int,
-  override val height: Int,
-) : Board {
-  private val board: Array<Cell> = Array(width * height) { Cell.Empty }
-
-  constructor(board: Board) : this(board.width, board.height) {
-    for (x in 0 until width) {
-      for (y in 0 until height) {
-        this[x, y] = board[x, y]
-      }
-    }
-  }
-
-  override operator fun get(x: Int, y: Int) = board[y * width + x]
-  operator fun set(x: Int, y: Int, cell: Cell) {
-    board[y * width + x] = cell
-  }
+interface ActionHandler {
+  fun onLeftPressed()
+  fun onRightPressed()
+  fun onRotateCounterClockwisePressed()
+  fun onRotateClockwisePressed()
+  fun onDownPressed()
+  fun onDropPressed()
+  fun onHoldPressed()
 }

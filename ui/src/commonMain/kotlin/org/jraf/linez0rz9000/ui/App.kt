@@ -31,39 +31,42 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Cell
 import org.jraf.linez0rz9000.engine.Engine
 
 @Composable
 @Preview
-fun App() {
+fun App(engine: Engine) {
   MaterialTheme {
     Surface(
       modifier = Modifier
         .safeContentPadding()
         .fillMaxSize(),
     ) {
-      val engine: Engine = remember { Engine(10, 20) }
+      val board: Board by engine.board.collectAsState()
       Canvas(modifier = Modifier.fillMaxSize()) {
         val cellWidth = size.width.toInt() / engine.width
         val cellHeight = size.height.toInt() / engine.height
         val cellSize = cellWidth.coerceAtMost(cellHeight).toFloat()
         for (y in 0..<engine.height) {
           for (x in 0..<engine.width) {
-            val cell = engine.board[x, y]
+            val cell = board[x, y]
             drawRect(
               color = when (cell) {
                 Cell.Empty -> Color.Black
-                Cell.Filled -> Color.Red
+                Cell.Piece -> Color.Red
+                Cell.Debris -> Color.Green
               },
               topLeft = Offset(x = cellSize * x, y = cellSize * y),
-              size = Size(width = cellSize -1 , height = cellSize-1 ),
+              size = Size(width = cellSize - 1, height = cellSize - 1),
             )
           }
         }
