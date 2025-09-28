@@ -66,39 +66,59 @@ class Engine(
     }
 
     fun isFilled(x: Int, y: Int) = shape().isFilled(x, y)
-
-    fun bottomMost(x: Int) = shape().bottomMost(x)
-
-    fun leftMost(y: Int): Int = shape().leftMost(y)
-
-    fun rightMost(y: Int) = shape().rightMost(y)
   }
 
   val actionHandler = object : ActionHandler {
     override fun onLeftPressed() {
-      if (!pieceCanGoLeft()) return
-      piece.value = piece.value.copy(x = piece.value.x - 1)
+      val currentPiece = piece.value
+      val movedPiece = currentPiece.copy(x = currentPiece.x - 1)
+      if (pieceCanGo(movedPiece)) {
+        piece.value = movedPiece
+      }
     }
 
     override fun onRightPressed() {
-      if (!pieceCanGoRight()) return
-      piece.value = piece.value.copy(x = piece.value.x + 1)
-    }
-
-    override fun onRotateCounterClockwisePressed() {
-      // Handle rotate right action
+      val currentPiece = piece.value
+      val movedPiece = currentPiece.copy(x = currentPiece.x + 1)
+      if (pieceCanGo(movedPiece)) {
+        piece.value = movedPiece
+      }
     }
 
     override fun onRotateClockwisePressed() {
-      // Handle rotate left action
+      val currentPiece = piece.value
+      var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation + 1)
+      applyPieceIfPossible(rotatedPiece)
+    }
+
+    override fun onRotateCounterClockwisePressed() {
+      val currentPiece = piece.value
+      var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation - 1)
+      applyPieceIfPossible(rotatedPiece)
+    }
+
+    private fun applyPieceIfPossible(piece: PieceWithPosition) {
+      val offsets = listOf(0, 1, 2, -1, -2)
+      for (offset in offsets) {
+        val candidatePiece = piece.copy(x = piece.x + offset)
+        if (pieceCanGo(candidatePiece)) {
+          this@Engine.piece.value = candidatePiece
+          return
+        }
+      }
     }
 
     override fun onDownPressed() {
-      // Handle down action
+      movePieceDown()
     }
 
     override fun onDropPressed() {
-      // Handle drop action
+      while (true) {
+        val hasDropped = movePieceDown()
+        if (hasDropped) {
+          break
+        }
+      }
     }
 
     override fun onHoldPressed() {
@@ -120,54 +140,37 @@ class Engine(
     while (true) {
       delay(.2.seconds)
 
-      if (!pieceCanGoDown()) {
-        // The piece is now debris
-        _board.value = _board.value.withPiece(piece.value, Cell.Debris)
-        piece.value = nextPiece()
-      } else {
-        // Move the piece down
-        piece.value = piece.value.copy(y = piece.value.y + 1)
-      }
+      movePieceDown()
     }
   }
 
-  private fun pieceCanGoDown(): Boolean {
-    val piece = piece.value
-    for (x in 0 until 4) {
-      val bottomMost = piece.bottomMost(x)
-      if (bottomMost == -1) continue
-      val downY = piece.y + bottomMost + 1
-      if (downY < 0) continue
-      if (downY >= _board.value.height || _board.value[piece.x + x, downY] != Cell.Empty) {
-        return false
-      }
+  private fun movePieceDown(): Boolean {
+    val currentPiece = piece.value
+    val movedPiece = currentPiece.copy(y = currentPiece.y + 1)
+    return if (!pieceCanGo(movedPiece)) {
+      // The piece is now debris
+      _board.value = _board.value.withPiece(piece.value, Cell.Debris)
+      piece.value = nextPiece()
+      true
+    } else {
+      // Move the piece down
+      piece.value = movedPiece
+      false
     }
-    return true
   }
 
-  private fun pieceCanGoLeft(): Boolean {
-    val piece = piece.value
-    for (y in 0 until 4) {
-      if (piece.y + y < 0) continue
-      val leftMost = piece.leftMost(y)
-      if (leftMost == -1) continue
-      val leftX = piece.x + leftMost - 1
-      if (leftX < 0 || _board.value[leftX, piece.y + y] != Cell.Empty) {
-        return false
-      }
-    }
-    return true
-  }
-
-  private fun pieceCanGoRight(): Boolean {
-    val piece = piece.value
-    for (y in 0 until 4) {
-      if (piece.y + y < 0) continue
-      val rightMost = piece.rightMost(y)
-      if (rightMost == -1) continue
-      val rightX = piece.x + rightMost + 1
-      if (rightX >= _board.value.width || _board.value[rightX, piece.y + y] != Cell.Empty) {
-        return false
+  private fun pieceCanGo(piece: PieceWithPosition): Boolean {
+    for (y in 0..<4) {
+      for (x in 0..<4) {
+        if (piece.isFilled(x, y)) {
+          val boardX = piece.x + x
+          val boardY = piece.y + y
+          if (boardY < 0) continue
+          val board = _board.value
+          if (boardX < 0 || boardX >= board.width || boardY >= board.height || board[boardX, boardY] != Cell.Empty) {
+            return false
+          }
+        }
       }
     }
     return true
@@ -176,8 +179,8 @@ class Engine(
 
 private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board {
   return toMutableBoard().apply {
-    for (x in 0 until 4) {
-      for (y in 0 until 4) {
+    for (x in 0..<4) {
+      for (y in 0..<4) {
         if (piece.isFilled(x, y)) {
           if (piece.y + y >= 0) {
             this[piece.x + x, piece.y + y] = cell

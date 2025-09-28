@@ -35,37 +35,10 @@ sealed class Piece(
 
     fun bottomMost(): Int {
       for (y in 3 downTo 0) {
-        for (x in 0 until 4) {
+        for (x in 0..<4) {
           if (array[y * 4 + x]) {
             return y
           }
-        }
-      }
-      return -1
-    }
-
-    fun bottomMost(x: Int): Int {
-      for (y in 3 downTo 0) {
-        if (array[y * 4 + x]) {
-          return y
-        }
-      }
-      return -1
-    }
-
-    fun leftMost(y: Int): Int {
-      for (x in 0 until 4) {
-        if (array[y * 4 + x]) {
-          return x
-        }
-      }
-      return -1
-    }
-
-    fun rightMost(y: Int): Int {
-      for (x in 3 downTo 0) {
-        if (array[y * 4 + x]) {
-          return x
         }
       }
       return -1
@@ -75,7 +48,7 @@ sealed class Piece(
   private val shapes: List<Shape> = shapes.map { it.toShape() }
 
   fun shape(rotation: Int): Shape {
-    return shapes[rotation % shapes.size]
+    return shapes[rotation.mod(shapes.size)]
   }
 
   private fun List<String>.toShape(): Shape {

@@ -28,8 +28,8 @@ package org.jraf.linez0rz9000.engine
 interface ActionHandler {
   fun onLeftPressed()
   fun onRightPressed()
-  fun onRotateCounterClockwisePressed()
   fun onRotateClockwisePressed()
+  fun onRotateCounterClockwisePressed()
   fun onDownPressed()
   fun onDropPressed()
   fun onHoldPressed()
