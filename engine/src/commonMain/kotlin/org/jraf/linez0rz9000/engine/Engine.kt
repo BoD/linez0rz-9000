@@ -28,7 +28,6 @@ package org.jraf.linez0rz9000.engine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -98,12 +97,19 @@ class Engine(
     }
 
     private fun applyPieceIfPossible(piece: PieceWithPosition) {
-      val offsets = listOf(0, 1, 2, -1, -2)
-      for (offset in offsets) {
-        val candidatePiece = piece.copy(x = piece.x + offset)
-        if (pieceCanGo(candidatePiece)) {
-          this@Engine.piece.value = candidatePiece
-          return
+      val yOffsets = listOf(0, -1, -2)
+      val xOffsets = listOf(0, 1, 2, -1, -2)
+      for (yOffset in yOffsets) {
+        for (xOffset in xOffsets) {
+          val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
+          if (pieceCanGo(candidatePiece)) {
+            this@Engine.piece.value = candidatePiece
+
+            if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
+              skipMovePieceDown = true
+            }
+            return
+          }
         }
       }
     }
@@ -119,6 +125,8 @@ class Engine(
           break
         }
       }
+      removeLines()
+      ticker.restart()
     }
 
     override fun onHoldPressed() {
@@ -136,11 +144,54 @@ class Engine(
     )
   }
 
-  suspend fun start() {
-    while (true) {
-      delay(.2.seconds)
+  private var skipMovePieceDown = false
 
-      movePieceDown()
+  private val ticker = Ticker(.5.seconds)
+
+  suspend fun start() {
+    ticker.start()
+    while (true) {
+      ticker.waitTick()
+      if (skipMovePieceDown) {
+        skipMovePieceDown = false
+      } else {
+        movePieceDown()
+        removeLines()
+      }
+    }
+  }
+
+  private fun removeLines() {
+    var board = _board.value
+    var hasChanges = false
+    for (y in 0..<board.height) {
+      var isFullLine = true
+      for (x in 0..<width) {
+        if (board[x, y] == Cell.Empty) {
+          isFullLine = false
+          break
+        }
+      }
+      if (isFullLine) {
+        hasChanges = true
+        board = board.withLineRemoved(y)
+      }
+    }
+    if (hasChanges) {
+      _board.value = board
+    }
+  }
+
+  private fun Board.withLineRemoved(line: Int): Board {
+    return toMutableBoard().apply {
+      for (y in line downTo 1) {
+        for (x in 0 until width) {
+          this[x, y] = this[x, y - 1]
+        }
+      }
+      for (x in 0 until width) {
+        this[x, 0] = Cell.Empty
+      }
     }
   }
 
