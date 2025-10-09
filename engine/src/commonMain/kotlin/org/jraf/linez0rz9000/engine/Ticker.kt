@@ -50,8 +50,13 @@ class Ticker(
     }
   }
 
-  fun restart() {
+  fun stop() {
     coroutineScope?.cancel()
+    coroutineScope = null
+  }
+
+  fun restart() {
+    stop()
     start()
   }
 

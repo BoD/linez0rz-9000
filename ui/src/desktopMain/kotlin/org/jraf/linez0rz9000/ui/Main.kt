@@ -36,9 +36,13 @@ import kotlinx.coroutines.launch
 import org.jraf.linez0rz9000.engine.Engine
 
 fun main() = application {
-  val engine = Engine(10, 20)
-
-  GlobalScope.launch { engine.start() }
+  val engine = Engine()
+  engine.start()
+  GlobalScope.launch {
+    engine.state.collect {
+      println("State change $it")
+    }
+  }
 
   Window(
     onCloseRequest = ::exitApplication,
@@ -78,6 +82,11 @@ fun main() = application {
 
         Key.X -> {
           engine.actionHandler.onRotateClockwisePressed()
+          true
+        }
+
+        Key.P -> {
+          engine.actionHandler.onPausePressed()
           true
         }
 

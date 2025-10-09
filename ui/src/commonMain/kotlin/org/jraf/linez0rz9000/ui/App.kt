@@ -53,11 +53,11 @@ fun App(engine: Engine) {
     ) {
       val board: Board by engine.board.collectAsState()
       Canvas(modifier = Modifier.fillMaxSize()) {
-        val cellWidth = size.width.toInt() / engine.width
-        val cellHeight = size.height.toInt() / engine.height
+        val cellWidth = size.width.toInt() / board.width
+        val cellHeight = size.height.toInt() / board.height
         val cellSize = cellWidth.coerceAtMost(cellHeight).toFloat()
-        for (y in 0..<engine.height) {
-          for (x in 0..<engine.width) {
+        for (y in 0..<board.height) {
+          for (x in 0..<board.width) {
             val cell = board[x, y]
             drawRect(
               color = when (cell) {

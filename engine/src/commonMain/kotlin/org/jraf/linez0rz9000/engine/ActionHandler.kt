@@ -33,4 +33,5 @@ interface ActionHandler {
   fun onDownPressed()
   fun onDropPressed()
   fun onHoldPressed()
+  fun onPausePressed()
 }

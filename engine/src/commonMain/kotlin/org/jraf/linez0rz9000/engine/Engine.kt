@@ -33,20 +33,30 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 class Engine(
-  val width: Int,
-  val height: Int,
+  width: Int = 10,
+  height: Int = 22,
 ) {
+  sealed interface State {
+    data object Running : State
+    data object GameOver : State
+    data object Paused : State
+  }
+
   private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-  private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
+  private val _state = MutableStateFlow<State>(State.Running)
+  val state: StateFlow<State> = _state
 
   private val _board = MutableStateFlow<Board>(MutableBoard(width, height))
 
+  private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
+
   val board: StateFlow<Board> = combine(_board, piece) { board, piece ->
-    board.withPiece(piece, Cell.Piece)
+    board.withPiece(piece, Cell.Piece).hideTopLines(2)
   }
     .stateIn(
       scope = coroutineScope,
@@ -69,6 +79,7 @@ class Engine(
 
   val actionHandler = object : ActionHandler {
     override fun onLeftPressed() {
+      if (_state.value != State.Running) return
       val currentPiece = piece.value
       val movedPiece = currentPiece.copy(x = currentPiece.x - 1)
       if (pieceCanGo(movedPiece)) {
@@ -77,6 +88,7 @@ class Engine(
     }
 
     override fun onRightPressed() {
+      if (_state.value != State.Running) return
       val currentPiece = piece.value
       val movedPiece = currentPiece.copy(x = currentPiece.x + 1)
       if (pieceCanGo(movedPiece)) {
@@ -85,40 +97,26 @@ class Engine(
     }
 
     override fun onRotateClockwisePressed() {
+      if (_state.value != State.Running) return
       val currentPiece = piece.value
       var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation + 1)
       applyPieceIfPossible(rotatedPiece)
     }
 
     override fun onRotateCounterClockwisePressed() {
+      if (_state.value != State.Running) return
       val currentPiece = piece.value
       var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation - 1)
       applyPieceIfPossible(rotatedPiece)
     }
 
-    private fun applyPieceIfPossible(piece: PieceWithPosition) {
-      val yOffsets = listOf(0, -1, -2)
-      val xOffsets = listOf(0, 1, 2, -1, -2)
-      for (yOffset in yOffsets) {
-        for (xOffset in xOffsets) {
-          val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
-          if (pieceCanGo(candidatePiece)) {
-            this@Engine.piece.value = candidatePiece
-
-            if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
-              skipMovePieceDown = true
-            }
-            return
-          }
-        }
-      }
-    }
-
     override fun onDownPressed() {
+      if (_state.value != State.Running) return
       movePieceDown()
     }
 
     override fun onDropPressed() {
+      if (_state.value != State.Running) return
       while (true) {
         val hasDropped = movePieceDown()
         if (hasDropped) {
@@ -130,7 +128,40 @@ class Engine(
     }
 
     override fun onHoldPressed() {
-      // Handle hold action
+      if (_state.value != State.Running) return
+      // TODO
+    }
+
+    override fun onPausePressed() {
+      when (_state.value) {
+        State.Running -> {
+          pause()
+        }
+
+        State.Paused -> {
+          unpause()
+        }
+
+        else -> {}
+      }
+    }
+  }
+
+  private fun applyPieceIfPossible(piece: PieceWithPosition) {
+    val yOffsets = listOf(0, -1, -2)
+    val xOffsets = listOf(0, 1, 2, -1, -2)
+    for (yOffset in yOffsets) {
+      for (xOffset in xOffsets) {
+        val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
+        if (pieceCanGo(candidatePiece)) {
+          this@Engine.piece.value = candidatePiece
+
+          if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
+            ticker.restart()
+          }
+          return
+        }
+      }
     }
   }
 
@@ -138,27 +169,42 @@ class Engine(
     val piece = Piece.values().random()
     return PieceWithPosition(
       piece = piece,
-      x = width / 2 - 2,
-      y = -piece.shape(0).bottomMost() - 1,
+      x = _board.value.width / 2 - 2,
+      y = 1 - piece.shape(0).bottomMost(),
       rotation = 0,
     )
   }
 
-  private var skipMovePieceDown = false
-
   private val ticker = Ticker(.5.seconds)
 
-  suspend fun start() {
+  fun start() {
+    if (_state.value != State.Running) error("Wrong state: ${_state.value}")
     ticker.start()
-    while (true) {
-      ticker.waitTick()
-      if (skipMovePieceDown) {
-        skipMovePieceDown = false
-      } else {
+    coroutineScope.launch {
+      while (_state.value != State.GameOver) {
+        ticker.waitTick()
         movePieceDown()
         removeLines()
       }
     }
+  }
+
+  private fun pause() {
+    if (_state.value != State.Running) error("Wrong state: ${_state.value}")
+    _state.value = State.Paused
+    ticker.stop()
+  }
+
+  private fun unpause() {
+    if (_state.value != State.Paused) error("Wrong state: ${_state.value}")
+    _state.value = State.Running
+    ticker.start()
+  }
+
+  fun stop() {
+    if (_state.value == State.GameOver) error("Wrong state: ${_state.value}")
+    _state.value = State.GameOver
+    ticker.stop()
   }
 
   private fun removeLines() {
@@ -166,7 +212,7 @@ class Engine(
     var hasChanges = false
     for (y in 0..<board.height) {
       var isFullLine = true
-      for (x in 0..<width) {
+      for (x in 0..<board.width) {
         if (board[x, y] == Cell.Empty) {
           isFullLine = false
           break
@@ -201,7 +247,12 @@ class Engine(
     return if (!pieceCanGo(movedPiece)) {
       // The piece is now debris
       _board.value = _board.value.withPiece(piece.value, Cell.Debris)
-      piece.value = nextPiece()
+      val nextPiece = nextPiece()
+      if (!pieceCanGo(nextPiece)) {
+        stop()
+      } else {
+        piece.value = nextPiece
+      }
       true
     } else {
       // Move the piece down
@@ -238,6 +289,18 @@ private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board 
           }
         }
       }
+    }
+  }
+}
+
+private fun Board.hideTopLines(linesToHide: Int): Board {
+  return object : Board {
+    override val width: Int = this@hideTopLines.width
+    override val height: Int = this@hideTopLines.height - linesToHide
+
+    override fun get(x: Int, y: Int): Cell {
+      if (y !in 0..<height) error("y out of bounds: $y")
+      return this@hideTopLines[x, y + linesToHide]
     }
   }
 }
