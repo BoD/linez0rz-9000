@@ -53,20 +53,43 @@ fun App(engine: Engine) {
     ) {
       val board: Board by engine.board.collectAsState()
       Canvas(modifier = Modifier.fillMaxSize()) {
-        val cellWidth = size.width.toInt() / board.width
-        val cellHeight = size.height.toInt() / board.height
-        val cellSize = cellWidth.coerceAtMost(cellHeight).toFloat()
-        for (y in 0..<board.height) {
-          for (x in 0..<board.width) {
+        // Draw an outline rectangle of the whole canvas
+        drawRect(
+          color = Color.Red,
+          size = Size(size.width - 1, size.height - 1),
+          style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1F),
+        )
+
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val boardWidth = board.width
+        val boardHeight = board.height
+        val cellWidth = (canvasWidth.toInt() - 2) / boardWidth
+        val cellHeight = ((canvasHeight - 2) / (boardHeight - 1.5F)).toInt()
+        val cellSize = cellWidth.coerceAtMost(cellHeight)
+        val boardPixelWidth = boardWidth * cellSize
+        val boardPixelHeight = ((boardHeight - 1.5F) * cellSize).toInt()
+        val offsetX = ((canvasWidth - boardPixelWidth) / 2).toInt().coerceAtLeast(1)
+        val offsetY = ((canvasHeight - boardPixelHeight) / 2).toInt().coerceAtLeast(1)
+        // Hide first row
+        // Also, row 1 is half shown
+        for (y in 1..<boardHeight) {
+          for (x in 0..<boardWidth) {
             val cell = board[x, y]
             drawRect(
+              topLeft = Offset(
+                x = (offsetX + cellSize * x).toFloat(),
+                y = offsetY + (if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
+              ),
+              size = Size(
+                width = (cellSize - 1).toFloat(),
+                height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
+              ),
               color = when (cell) {
                 Cell.Empty -> Color.Black
                 Cell.Piece -> Color.Red
                 Cell.Debris -> Color.Green
               },
-              topLeft = Offset(x = cellSize * x, y = cellSize * y),
-              size = Size(width = cellSize - 1, height = cellSize - 1),
             )
           }
         }

@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.seconds
 class Engine(
   width: Int = 10,
   height: Int = 22,
+  nextPiecesSize: Int = 4,
 ) {
   sealed interface State {
     data object Running : State
@@ -53,10 +54,12 @@ class Engine(
 
   private val _board = MutableStateFlow<Board>(MutableBoard(width, height))
 
+  val nextPieces = NextPieces(size = nextPiecesSize)
+
   private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
 
   val board: StateFlow<Board> = combine(_board, piece) { board, piece ->
-    board.withPiece(piece, Cell.Piece).hideTopLines(2)
+    board.withPiece(piece, Cell.Piece)
   }
     .stateIn(
       scope = coroutineScope,
@@ -166,11 +169,11 @@ class Engine(
   }
 
   private fun nextPiece(): PieceWithPosition {
-    val piece = Piece.values().random()
+    val piece = nextPieces.getNextPiece()
     return PieceWithPosition(
       piece = piece,
       x = _board.value.width / 2 - 2,
-      y = 1 - piece.shape(0).bottomMost(),
+      y = 2 - piece.shape(0).bottomMost(),
       rotation = 0,
     )
   }
@@ -183,6 +186,7 @@ class Engine(
     coroutineScope.launch {
       while (_state.value != State.GameOver) {
         ticker.waitTick()
+        if (_state.value == State.GameOver) break
         movePieceDown()
         removeLines()
       }
@@ -289,18 +293,6 @@ private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board 
           }
         }
       }
-    }
-  }
-}
-
-private fun Board.hideTopLines(linesToHide: Int): Board {
-  return object : Board {
-    override val width: Int = this@hideTopLines.width
-    override val height: Int = this@hideTopLines.height - linesToHide
-
-    override fun get(x: Int, y: Int): Cell {
-      if (y !in 0..<height) error("y out of bounds: $y")
-      return this@hideTopLines[x, y + linesToHide]
     }
   }
 }
