@@ -58,8 +58,17 @@ class Engine(
 
   private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
 
-  val board: StateFlow<Board> = combine(_board, piece) { board, piece ->
-    board.withPiece(piece, Cell.Piece)
+  val board: StateFlow<Board> = combine(
+    _board,
+    piece,
+    _state,
+  ) { board, piece, state ->
+    if (state == State.GameOver) {
+      // Don't show the current piece if the game is over
+      board
+    } else {
+      board.withPiece(piece, Cell.Piece)
+    }
   }
     .stateIn(
       scope = coroutineScope,
@@ -193,13 +202,13 @@ class Engine(
     }
   }
 
-  private fun pause() {
+  fun pause() {
     if (_state.value != State.Running) error("Wrong state: ${_state.value}")
     _state.value = State.Paused
     ticker.stop()
   }
 
-  private fun unpause() {
+  fun unpause() {
     if (_state.value != State.Paused) error("Wrong state: ${_state.value}")
     _state.value = State.Running
     ticker.start()
@@ -209,6 +218,14 @@ class Engine(
     if (_state.value == State.GameOver) error("Wrong state: ${_state.value}")
     _state.value = State.GameOver
     ticker.stop()
+  }
+
+  fun restart() {
+    if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
+    _board.value = MutableBoard(_board.value.width, _board.value.height)
+    piece.value = nextPiece()
+    _state.value = State.Running
+    start()
   }
 
   private fun removeLines() {
@@ -253,6 +270,7 @@ class Engine(
       _board.value = _board.value.withPiece(piece.value, Cell.Debris)
       val nextPiece = nextPiece()
       if (!pieceCanGo(nextPiece)) {
+        // Game over!
         stop()
       } else {
         piece.value = nextPiece
