@@ -1,4 +1,4 @@
-
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -26,7 +26,7 @@ kotlin {
         implementation(libs.androidx.lifecycle.viewmodel)
         implementation(libs.androidx.lifecycle.runtimeCompose)
 
-        api(project(":engine"))
+        implementation(project(":ui"))
       }
     }
 
@@ -35,6 +35,18 @@ kotlin {
         implementation(compose.desktop.currentOs)
         implementation(libs.kotlinx.coroutines.swing)
       }
+    }
+  }
+}
+
+compose.desktop {
+  application {
+    mainClass = "org.jraf.linez0rz9000.ui.MainKt"
+
+    nativeDistributions {
+      targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+      packageName = "org.jraf.linez0rz9000"
+      packageVersion = rootProject.version.toString()
     }
   }
 }

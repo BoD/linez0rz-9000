@@ -23,7 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jraf.linez0rz9000.ui
+package org.jraf.linez0rz9000.desktop
 
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -34,6 +34,7 @@ import androidx.compose.ui.window.application
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jraf.linez0rz9000.engine.Engine
+import org.jraf.linez0rz9000.ui.App
 
 fun main() = application {
   val engine = Engine()

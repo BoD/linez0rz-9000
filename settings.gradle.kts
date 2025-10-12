@@ -18,4 +18,5 @@ rootProject.name = "linez0rz-9000"
 include(
   "engine",
   "ui",
+  "desktop",
 )
