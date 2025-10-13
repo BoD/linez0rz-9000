@@ -27,7 +27,6 @@ package org.jraf.linez0rz9000.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -46,9 +45,7 @@ import org.jraf.linez0rz9000.engine.Engine
 fun App(engine: Engine) {
   MaterialTheme {
     Surface(
-      modifier = Modifier
-        .safeContentPadding()
-        .fillMaxSize(),
+      modifier = Modifier.fillMaxSize(),
     ) {
       val board: Board by engine.board.collectAsState()
       val state: Engine.State by engine.state.collectAsState()

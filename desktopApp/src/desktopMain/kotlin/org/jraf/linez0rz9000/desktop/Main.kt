@@ -25,6 +25,10 @@
 
 package org.jraf.linez0rz9000.desktop
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -61,13 +65,13 @@ fun main() = application {
           true
         }
 
-        Key.DirectionDown, Key.D -> {
-          engine.actionHandler.onDownPressed()
+        Key.Spacebar, Key.C -> {
+          engine.actionHandler.onDropPressed()
           true
         }
 
-        Key.Spacebar, Key.C -> {
-          engine.actionHandler.onDropPressed()
+        Key.DirectionDown, Key.D -> {
+          engine.actionHandler.onDownPressed()
           true
         }
 
@@ -90,6 +94,12 @@ fun main() = application {
       }
     },
   ) {
-    App(engine)
+    Box(
+      modifier = Modifier
+        .safeContentPadding()
+        .fillMaxSize(),
+    ) {
+      App(engine)
+    }
   }
 }

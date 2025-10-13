@@ -29,13 +29,6 @@ kotlin {
         api(project(":engine"))
       }
     }
-
-    desktopMain.apply {
-      dependencies {
-        implementation(compose.desktop.currentOs)
-        implementation(libs.kotlinx.coroutines.swing)
-      }
-    }
   }
 }
 

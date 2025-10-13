@@ -1,22 +1,36 @@
+rootProject.name = "linez0rz-9000"
+
 pluginManagement {
   repositories {
+    google {
+      mavenContent {
+        includeGroupAndSubgroups("androidx")
+        includeGroupAndSubgroups("com.android")
+        includeGroupAndSubgroups("com.google")
+      }
+    }
     mavenCentral()
     gradlePluginPortal()
   }
 }
 
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
-  @Suppress("UnstableApiUsage")
   repositories {
-    google()
+    google {
+      mavenContent {
+        includeGroupAndSubgroups("androidx")
+        includeGroupAndSubgroups("com.android")
+        includeGroupAndSubgroups("com.google")
+      }
+    }
     mavenCentral()
   }
 }
 
-rootProject.name = "linez0rz-9000"
-
 include(
-  "engine",
-  "ui",
-  "desktop",
+  ":engine",
+  ":ui",
+  ":desktopApp",
+  ":androidApp",
 )
