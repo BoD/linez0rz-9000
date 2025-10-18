@@ -33,13 +33,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class Engine(
   width: Int = 10,
   height: Int = 22,
   nextPiecesSize: Int = 4,
+  private val delay: Duration = .2.seconds,
 ) {
   sealed interface State {
     data object Running : State
@@ -89,6 +90,8 @@ class Engine(
     fun isFilled(x: Int, y: Int) = shape().isFilled(x, y)
   }
 
+  private val scheduler = SingleJobScheduler()
+
   val actionHandler = object : ActionHandler {
     override fun onLeftPressed() {
       if (_state.value != State.Running) return
@@ -96,6 +99,12 @@ class Engine(
       val movedPiece = currentPiece.copy(x = currentPiece.x - 1)
       if (pieceCanGo(movedPiece)) {
         piece.value = movedPiece
+
+        if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
+          scheduler.schedule(delay * 3) {
+            gameLoop()
+          }
+        }
       }
     }
 
@@ -105,6 +114,12 @@ class Engine(
       val movedPiece = currentPiece.copy(x = currentPiece.x + 1)
       if (pieceCanGo(movedPiece)) {
         piece.value = movedPiece
+
+        if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
+          scheduler.schedule(delay * 3) {
+            gameLoop()
+          }
+        }
       }
     }
 
@@ -124,19 +139,19 @@ class Engine(
 
     override fun onDownPressed() {
       if (_state.value != State.Running) return
-      movePieceDown()
+      if (pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+        movePieceDown()
+      }
     }
 
     override fun onDropPressed() {
       if (_state.value != State.Running) return
-      while (true) {
-        val hasDropped = movePieceDown()
-        if (hasDropped) {
-          break
-        }
+      while (pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+        movePieceDown()
       }
-      removeLines()
-      ticker.restart()
+      scheduler.schedule(Duration.ZERO) {
+        gameLoop()
+      }
     }
 
     override fun onHoldPressed() {
@@ -166,10 +181,12 @@ class Engine(
       for (xOffset in xOffsets) {
         val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
         if (pieceCanGo(candidatePiece)) {
-          this@Engine.piece.value = candidatePiece
+          this.piece.value = candidatePiece
 
           if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
-            ticker.restart()
+            scheduler.schedule(delay * 3) {
+              gameLoop()
+            }
           }
           return
         }
@@ -187,17 +204,30 @@ class Engine(
     )
   }
 
-  private val ticker = Ticker(.5.seconds)
-
   fun start() {
     if (_state.value != State.Running) error("Wrong state: ${_state.value}")
-    ticker.start()
-    coroutineScope.launch {
-      while (_state.value != State.GameOver) {
-        ticker.waitTick()
-        if (_state.value == State.GameOver) break
-        movePieceDown()
-        removeLines()
+    scheduler.schedule(delay) {
+      gameLoop()
+    }
+  }
+
+  private fun gameLoop() {
+    if (_state.value == State.GameOver) return
+
+    if (!pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+      handlePieceLanded()
+      scheduler.schedule(delay) {
+        gameLoop()
+      }
+    } else {
+      movePieceDown()
+      val nextDelay = if (!pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+        delay * 3
+      } else {
+        delay
+      }
+      scheduler.schedule(nextDelay) {
+        gameLoop()
       }
     }
   }
@@ -205,19 +235,21 @@ class Engine(
   fun pause() {
     if (_state.value != State.Running) error("Wrong state: ${_state.value}")
     _state.value = State.Paused
-    ticker.stop()
+    scheduler.cancel()
   }
 
   fun unpause() {
     if (_state.value != State.Paused) error("Wrong state: ${_state.value}")
     _state.value = State.Running
-    ticker.start()
+    scheduler.schedule(delay) {
+      gameLoop()
+    }
   }
 
   fun stop() {
     if (_state.value == State.GameOver) error("Wrong state: ${_state.value}")
     _state.value = State.GameOver
-    ticker.stop()
+    scheduler.cancel()
   }
 
   fun restart() {
@@ -262,24 +294,23 @@ class Engine(
     }
   }
 
-  private fun movePieceDown(): Boolean {
+  private fun movePieceDown() {
     val currentPiece = piece.value
-    val movedPiece = currentPiece.copy(y = currentPiece.y + 1)
-    return if (!pieceCanGo(movedPiece)) {
-      // The piece is now debris
-      _board.value = _board.value.withPiece(piece.value, Cell.Debris)
-      val nextPiece = nextPiece()
-      if (!pieceCanGo(nextPiece)) {
-        // Game over!
-        stop()
-      } else {
-        piece.value = nextPiece
-      }
-      true
+    piece.value = currentPiece.copy(y = currentPiece.y + 1)
+  }
+
+  private fun handlePieceLanded() {
+    // The piece is now debris
+    _board.value = _board.value.withPiece(piece.value, Cell.Debris)
+
+    removeLines()
+
+    val nextPiece = nextPiece()
+    if (!pieceCanGo(nextPiece)) {
+      // Game over!
+      stop()
     } else {
-      // Move the piece down
-      piece.value = movedPiece
-      false
+      piece.value = nextPiece
     }
   }
 

@@ -25,6 +25,7 @@
 
 package org.jraf.linez0rz9000
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -47,17 +48,49 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  @SuppressLint("RestrictedApi")
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
     if (event.action == KeyEvent.ACTION_DOWN) {
       when (event.keyCode) {
-        KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_E -> engine.actionHandler.onLeftPressed()
-        KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_F -> engine.actionHandler.onRightPressed()
-        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_C -> engine.actionHandler.onDropPressed()
-        KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_D -> engine.actionHandler.onDownPressed()
-        KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_G -> engine.actionHandler.onRotateClockwisePressed()
-        KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_J -> engine.actionHandler.onRotateCounterClockwisePressed()
-        KeyEvent.KEYCODE_BUTTON_START, KeyEvent.KEYCODE_O -> engine.actionHandler.onPausePressed()
-        else -> return super.dispatchKeyEvent(event)
+        KeyEvent.KEYCODE_DPAD_LEFT,
+        KeyEvent.KEYCODE_E,
+          ->
+          engine.actionHandler.onLeftPressed()
+
+        KeyEvent.KEYCODE_DPAD_RIGHT,
+        KeyEvent.KEYCODE_F,
+          ->
+          engine.actionHandler.onRightPressed()
+
+        KeyEvent.KEYCODE_DPAD_UP,
+        KeyEvent.KEYCODE_C,
+          ->
+          engine.actionHandler.onDropPressed()
+
+        KeyEvent.KEYCODE_DPAD_DOWN,
+        KeyEvent.KEYCODE_D,
+          ->
+          engine.actionHandler.onDownPressed()
+
+        KeyEvent.KEYCODE_BUTTON_A,
+        KeyEvent.KEYCODE_BUTTON_X,
+        KeyEvent.KEYCODE_G,
+          ->
+          engine.actionHandler.onRotateClockwisePressed()
+
+        KeyEvent.KEYCODE_BUTTON_B,
+        KeyEvent.KEYCODE_BUTTON_Y,
+        KeyEvent.KEYCODE_J,
+          ->
+          engine.actionHandler.onRotateCounterClockwisePressed()
+
+        KeyEvent.KEYCODE_BUTTON_START,
+        KeyEvent.KEYCODE_O,
+          ->
+          engine.actionHandler.onPausePressed()
+
+        else ->
+          return super.dispatchKeyEvent(event)
       }
       return true
     }

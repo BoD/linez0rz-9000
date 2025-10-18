@@ -27,40 +27,26 @@ package org.jraf.linez0rz9000.engine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-class Ticker(
-  private val delay: Duration,
-) {
-  private var coroutineScope: CoroutineScope? = null
-  private val channel = Channel<Unit>(Channel.RENDEZVOUS)
+class SingleJobScheduler() {
+  private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+  private var job: Job? = null
 
-  fun start() {
-    coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    coroutineScope!!.launch {
-      while (true) {
-        delay(delay)
-        channel.send(Unit)
-      }
+  fun schedule(delay: Duration, block: () -> Unit) {
+    job?.cancel()
+    job = coroutineScope.launch {
+      delay(delay)
+      block()
     }
   }
 
-  fun stop() {
-    coroutineScope?.cancel()
-    coroutineScope = null
-  }
-
-  fun restart() {
-    stop()
-    start()
-  }
-
-  suspend fun waitTick() {
-    channel.receive()
+  fun cancel() {
+    job?.cancel()
+    job = null
   }
 }

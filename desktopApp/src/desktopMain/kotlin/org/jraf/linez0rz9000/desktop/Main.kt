@@ -75,12 +75,12 @@ fun main() = application {
           true
         }
 
-        Key.DirectionUp, Key.X, Key.G -> {
+        Key.DirectionUp, Key.X, Key.G, Key.H -> {
           engine.actionHandler.onRotateClockwisePressed()
           true
         }
 
-        Key.Z, Key.J -> {
+        Key.Z, Key.J, Key.I -> {
           engine.actionHandler.onRotateCounterClockwisePressed()
           true
         }

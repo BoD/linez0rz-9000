@@ -34,7 +34,7 @@ class NextPieces private constructor(
   constructor(size: Int) : this(size, mutableListOf<Piece>().ensureCapacity(size))
 
   internal fun getNextPiece(): Piece {
-    return piecesBuffer.removeFirst().also {
+    return piecesBuffer.removeAt(0).also {
       piecesBuffer.ensureCapacity(nextPiecesSize)
     }
   }
