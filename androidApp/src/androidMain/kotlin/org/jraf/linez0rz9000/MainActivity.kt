@@ -50,50 +50,67 @@ class MainActivity : ComponentActivity() {
 
   @SuppressLint("RestrictedApi")
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-    if (event.action == KeyEvent.ACTION_DOWN) {
-      when (event.keyCode) {
-        KeyEvent.KEYCODE_DPAD_LEFT,
-        KeyEvent.KEYCODE_E,
-          ->
-          engine.actionHandler.onLeftPressed()
-
-        KeyEvent.KEYCODE_DPAD_RIGHT,
-        KeyEvent.KEYCODE_F,
-          ->
-          engine.actionHandler.onRightPressed()
-
-        KeyEvent.KEYCODE_DPAD_UP,
-        KeyEvent.KEYCODE_C,
-          ->
-          engine.actionHandler.onDropPressed()
-
-        KeyEvent.KEYCODE_DPAD_DOWN,
-        KeyEvent.KEYCODE_D,
-          ->
-          engine.actionHandler.onDownPressed()
-
-        KeyEvent.KEYCODE_BUTTON_A,
-        KeyEvent.KEYCODE_BUTTON_X,
-        KeyEvent.KEYCODE_G,
-          ->
-          engine.actionHandler.onRotateClockwisePressed()
-
-        KeyEvent.KEYCODE_BUTTON_B,
-        KeyEvent.KEYCODE_BUTTON_Y,
-        KeyEvent.KEYCODE_J,
-          ->
-          engine.actionHandler.onRotateCounterClockwisePressed()
-
-        KeyEvent.KEYCODE_BUTTON_START,
-        KeyEvent.KEYCODE_O,
-          ->
-          engine.actionHandler.onPausePressed()
-
-        else ->
-          return super.dispatchKeyEvent(event)
-      }
-      return true
+    if (event.action != KeyEvent.ACTION_DOWN) {
+      return super.dispatchKeyEvent(event)
     }
-    return super.dispatchKeyEvent(event)
+
+    return when (event.keyCode) {
+      KeyEvent.KEYCODE_DPAD_LEFT,
+      KeyEvent.KEYCODE_E,
+        -> {
+        engine.actionHandler.onLeftPressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_DPAD_RIGHT,
+      KeyEvent.KEYCODE_F,
+        -> {
+        engine.actionHandler.onRightPressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_DPAD_UP,
+      KeyEvent.KEYCODE_C,
+        -> {
+        engine.actionHandler.onDropPressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_DPAD_DOWN,
+      KeyEvent.KEYCODE_D,
+        -> {
+        engine.actionHandler.onDownPressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_BUTTON_A,
+      KeyEvent.KEYCODE_BUTTON_X,
+      KeyEvent.KEYCODE_G,
+      KeyEvent.KEYCODE_H,
+        -> {
+        engine.actionHandler.onRotateClockwisePressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_BUTTON_B,
+      KeyEvent.KEYCODE_BUTTON_Y,
+      KeyEvent.KEYCODE_J,
+      KeyEvent.KEYCODE_I,
+        -> {
+        engine.actionHandler.onRotateCounterClockwisePressed()
+        true
+      }
+
+      KeyEvent.KEYCODE_BUTTON_START,
+      KeyEvent.KEYCODE_O,
+        -> {
+        engine.actionHandler.onPausePressed()
+        true
+      }
+
+      else -> {
+        super.dispatchKeyEvent(event)
+      }
+    }
   }
 }

@@ -29,11 +29,35 @@ sealed class Piece(
   shapes: List<List<String>>,
 ) {
   class Shape(private val array: BooleanArray) {
+    val topMost: Int = topMost()
+    val leftMost: Int = leftMost()
+    val bottomMost: Int = bottomMost()
+
+    val width: Int
+    val height: Int
+
+    init {
+      val (w, h) = dimensions()
+      width = w
+      height = h
+    }
+
     fun isFilled(x: Int, y: Int): Boolean {
       return array[y * 4 + x]
     }
 
-    fun bottomMost(): Int {
+    private fun topMost(): Int {
+      for (y in 0..<4) {
+        for (x in 0..<4) {
+          if (array[y * 4 + x]) {
+            return y
+          }
+        }
+      }
+      error("Empty shape")
+    }
+
+    private fun bottomMost(): Int {
       for (y in 3 downTo 0) {
         for (x in 0..<4) {
           if (array[y * 4 + x]) {
@@ -41,7 +65,36 @@ sealed class Piece(
           }
         }
       }
-      return -1
+      error("Empty shape")
+    }
+
+    private fun leftMost(): Int {
+      for (x in 0..<4) {
+        for (y in 0..<4) {
+          if (array[y * 4 + x]) {
+            return x
+          }
+        }
+      }
+      error("Empty shape")
+    }
+
+    private fun dimensions(): Pair<Int, Int> {
+      var maxX = -1
+      var maxY = -1
+      for (y in topMost..<4) {
+        for (x in leftMost..<4) {
+          if (array[y * 4 + x]) {
+            if (x > maxX) {
+              maxX = x
+            }
+            if (y > maxY) {
+              maxY = y
+            }
+          }
+        }
+      }
+      return maxX + 1 - leftMost to maxY + 1 - topMost
     }
   }
 

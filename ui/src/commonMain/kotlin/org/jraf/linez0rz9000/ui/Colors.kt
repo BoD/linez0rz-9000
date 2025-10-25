@@ -23,28 +23,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jraf.linez0rz9000.engine
+package org.jraf.linez0rz9000.ui
 
-import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.compose.ui.graphics.Color
+import org.jraf.linez0rz9000.engine.Engine
 
-class NextPieces(
-  private val size: Int,
-) {
-  private val piecesBuffer: MutableList<Piece> = mutableListOf<Piece>().ensureCapacity(size)
-
-  val nextPieces: MutableStateFlow<List<Piece>> = MutableStateFlow(piecesBuffer.take(size))
-
-  internal fun getNextPiece(): Piece {
-    return piecesBuffer.removeAt(0).also {
-      piecesBuffer.ensureCapacity(size)
-      nextPieces.value = piecesBuffer.take(size)
-    }
-  }
-
-  private fun MutableList<Piece>.ensureCapacity(nextPiecesSize: Int): MutableList<Piece> = apply {
-    if (this.size < nextPiecesSize) {
-      addAll(Piece.values().shuffled())
-    }
-  }
+fun pieceColor(state: Engine.State): Color = when (state) {
+  Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
+  Engine.State.Running -> Color.Red
 }
-

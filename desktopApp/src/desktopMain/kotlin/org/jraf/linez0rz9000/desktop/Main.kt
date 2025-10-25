@@ -55,42 +55,61 @@ fun main() = application {
     onKeyEvent = { keyEvent ->
       if (keyEvent.type != KeyEventType.KeyDown) return@Window false
       when (keyEvent.key) {
-        Key.DirectionLeft, Key.E -> {
+        Key.DirectionLeft,
+        Key.E,
+          -> {
           engine.actionHandler.onLeftPressed()
           true
         }
 
-        Key.DirectionRight, Key.F -> {
+        Key.DirectionRight,
+        Key.F,
+          -> {
           engine.actionHandler.onRightPressed()
           true
         }
 
-        Key.Spacebar, Key.C -> {
+        Key.Spacebar,
+        Key.C,
+          -> {
           engine.actionHandler.onDropPressed()
           true
         }
 
-        Key.DirectionDown, Key.D -> {
+        Key.DirectionDown,
+        Key.D,
+          -> {
           engine.actionHandler.onDownPressed()
           true
         }
 
-        Key.DirectionUp, Key.X, Key.G, Key.H -> {
+        Key.DirectionUp,
+        Key.X,
+        Key.G,
+        Key.H,
+          -> {
           engine.actionHandler.onRotateClockwisePressed()
           true
         }
 
-        Key.Z, Key.J, Key.I -> {
+        Key.Z,
+        Key.J,
+        Key.I,
+          -> {
           engine.actionHandler.onRotateCounterClockwisePressed()
           true
         }
 
-        Key.P, Key.O -> {
+        Key.P,
+        Key.O,
+          -> {
           engine.actionHandler.onPausePressed()
           true
         }
 
-        else -> false
+        else -> {
+          false
+        }
       }
     },
   ) {

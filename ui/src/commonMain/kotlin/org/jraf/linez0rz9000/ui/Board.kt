@@ -35,10 +35,11 @@ import androidx.compose.ui.graphics.Color
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Cell
 import org.jraf.linez0rz9000.engine.Engine
+import kotlin.math.min
 
 @Composable
 fun Board(board: Board, state: Engine.State) {
-  Canvas(modifier = Modifier.Companion.fillMaxSize()) {
+  Canvas(modifier = Modifier.fillMaxSize()) {
 //        // Debug: draw an outline rectangle of the whole canvas
 //        drawRect(
 //          color = Color.Red,
@@ -52,7 +53,7 @@ fun Board(board: Board, state: Engine.State) {
     val boardHeight = board.height
     val cellWidth = (canvasWidth.toInt() - 2) / boardWidth
     val cellHeight = ((canvasHeight - 2) / (boardHeight - 1.5F)).toInt()
-    val cellSize = cellWidth.coerceAtMost(cellHeight)
+    val cellSize = min(cellWidth, cellHeight)
     val boardPixelWidth = boardWidth * cellSize
     val boardPixelHeight = ((boardHeight - 1.5F) * cellSize).toInt()
     val offsetX = ((canvasWidth - boardPixelWidth) / 2).toInt().coerceAtLeast(1)
@@ -71,26 +72,18 @@ fun Board(board: Board, state: Engine.State) {
             width = (cellSize - 1).toFloat(),
             height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
           ),
-          color = when (state) {
-            Engine.State.GameOver ->
-              when (cell) {
-                Cell.Empty -> Color.Companion.DarkGray
-                Cell.Piece -> Color.Companion.LightGray
-                Cell.Debris -> Color.Companion.LightGray
-              }
-
-            Engine.State.Paused -> when (cell) {
-              Cell.Empty -> Color.Companion.Black
-              Cell.Piece -> Color.Companion.LightGray
-              Cell.Debris -> Color.Companion.LightGray
+          color = when (cell) {
+            Cell.Empty -> when (state) {
+              Engine.State.GameOver -> Color.DarkGray
+              Engine.State.Paused, Engine.State.Running -> Color.Black
             }
 
-            Engine.State.Running ->
-              when (cell) {
-                Cell.Empty -> Color.Companion.Black
-                Cell.Piece -> Color.Companion.Red
-                Cell.Debris -> Color.Companion.Green
-              }
+            Cell.Piece -> pieceColor(state)
+
+            Cell.Debris -> when (state) {
+              Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
+              Engine.State.Running -> Color.Green
+            }
           },
         )
       }

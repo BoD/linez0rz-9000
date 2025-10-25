@@ -55,7 +55,8 @@ class Engine(
 
   private val _board = MutableStateFlow<Board>(MutableBoard(width, height))
 
-  val nextPieces = NextPieces(size = nextPiecesSize)
+  private val _nextPieces = NextPieces(size = nextPiecesSize)
+  val nextPieces: StateFlow<List<Piece>> = _nextPieces.nextPieces
 
   private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
 
@@ -195,11 +196,11 @@ class Engine(
   }
 
   private fun nextPiece(): PieceWithPosition {
-    val piece = nextPieces.getNextPiece()
+    val piece = _nextPieces.getNextPiece()
     return PieceWithPosition(
       piece = piece,
       x = _board.value.width / 2 - 2,
-      y = 2 - piece.shape(0).bottomMost(),
+      y = 2 - piece.shape(0).bottomMost,
       rotation = 0,
     )
   }

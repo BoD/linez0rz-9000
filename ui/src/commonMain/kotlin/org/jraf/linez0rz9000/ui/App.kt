@@ -25,58 +25,151 @@
 
 package org.jraf.linez0rz9000.ui
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Engine
+import org.jraf.linez0rz9000.engine.Piece
+import kotlin.math.min
 
 @Composable
-@Preview
 fun App(engine: Engine) {
-  MaterialTheme {
-    Surface(
-      modifier = Modifier.fillMaxSize(),
+  val board: Board by engine.board.collectAsState()
+  val state: Engine.State by engine.state.collectAsState()
+  val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
+  Row {
+    Box(
+      modifier = Modifier
+        .weight(1F),
     ) {
-      val board: Board by engine.board.collectAsState()
-      val state: Engine.State by engine.state.collectAsState()
-      Board(board, state)
+      Board(board = board, state = state)
+    }
 
-      when (state) {
-        is Engine.State.Running -> {
-          // Nothing
-        }
+    NextPieces(
+      nextPieces = nextPieces,
+      state = state,
+    )
+  }
+  GameControlsPanel(engine = engine, state = state)
+}
 
-        is Engine.State.Paused, is Engine.State.GameOver -> {
-          Box(Modifier.fillMaxSize()) {
-            Button(
-              modifier = Modifier.align(Alignment.Center),
-              onClick = {
-                when (state) {
-                  is Engine.State.Paused -> engine.unpause()
-                  is Engine.State.GameOver -> engine.restart()
-                  else -> throw IllegalStateException()
-                }
-              },
-            ) {
-              Text(
-                when (state) {
-                  is Engine.State.Paused -> "Resume"
-                  is Engine.State.GameOver -> "Play again"
-                  else -> throw IllegalStateException()
-                },
+@Composable
+private fun NextPieces(
+  nextPieces: List<Piece>,
+  state: Engine.State,
+) {
+  Column(
+    modifier = Modifier
+      .padding(top = 4.dp, bottom = 4.dp)
+      .width(64.dp),
+    verticalArrangement = Arrangement.spacedBy(4.dp),
+  ) {
+    for (piece in nextPieces) {
+      NextPiece(
+        piece = piece,
+        state = state,
+      )
+    }
+  }
+}
+
+@Composable
+private fun NextPiece(
+  piece: Piece,
+  state: Engine.State,
+) {
+  Layout(
+    content = {
+      Canvas(
+        modifier = Modifier.fillMaxSize(),
+      ) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val cellWidth = (canvasWidth.toInt() - 2) / 4
+        val cellHeight = (canvasHeight.toInt() - 2) / 2
+        val cellSize = min(cellWidth, cellHeight)
+        val shape = piece.shape(0)
+        val leftOffset = (4 - shape.width) * cellSize / 2 - shape.leftMost * cellSize
+        val topOffset = (2 - shape.height) * cellSize / 2 - shape.topMost * cellSize
+
+        for (x in 0..<4) {
+          for (y in 0..<4) {
+            if (shape.isFilled(x, y)) {
+              drawRect(
+                topLeft = Offset(
+                  x = (1 + cellSize * x + leftOffset).toFloat(),
+                  y = (1 + cellSize * y + topOffset).toFloat(),
+                ),
+                size = Size(
+                  width = (cellSize - 1).toFloat(),
+                  height = (cellSize - 1).toFloat(),
+                ),
+                color = pieceColor(state),
               )
             }
           }
+        }
+      }
+    },
+  ) { measurables, constraints ->
+    val width = constraints.maxWidth
+    val height = width / 2
+    val placeable = measurables.first().measure(Constraints.fixed(width, height))
+    layout(width, height) {
+      placeable.place(0, 0)
+    }
+  }
+}
+
+@Composable
+private fun GameControlsPanel(
+  engine: Engine,
+  state: Engine.State,
+) {
+  when (state) {
+    is Engine.State.Running -> {
+      // Nothing
+    }
+
+    is Engine.State.Paused,
+    is Engine.State.GameOver,
+      -> {
+      Box(Modifier.fillMaxSize()) {
+        Button(
+          modifier = Modifier.align(Alignment.Center),
+          onClick = {
+            when (state) {
+              is Engine.State.Paused -> engine.unpause()
+              is Engine.State.GameOver -> engine.restart()
+              else -> throw IllegalStateException()
+            }
+          },
+        ) {
+          Text(
+            when (state) {
+              is Engine.State.Paused -> "Resume"
+              is Engine.State.GameOver -> "Play again"
+              else -> throw IllegalStateException()
+            },
+          )
         }
       }
     }
