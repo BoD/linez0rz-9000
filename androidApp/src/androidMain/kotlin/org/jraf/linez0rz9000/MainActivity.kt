@@ -31,20 +31,27 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import org.jraf.linez0rz9000.engine.Engine
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import org.jraf.linez0rz9000.ui.App
 
 class MainActivity : ComponentActivity() {
-  private val engine = Engine()
+  private val viewModel: MainViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
 
-    engine.start()
-
     setContent {
-      App(engine)
+      Scaffold(containerColor = Color.Transparent) { contentPadding ->
+        Box(modifier = Modifier.padding(contentPadding)) {
+          App(viewModel.engine)
+        }
+      }
     }
   }
 
@@ -58,28 +65,28 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_DPAD_LEFT,
       KeyEvent.KEYCODE_E,
         -> {
-        engine.actionHandler.onLeftPressed()
+        viewModel.engine.actionHandler.onLeftPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_RIGHT,
       KeyEvent.KEYCODE_F,
         -> {
-        engine.actionHandler.onRightPressed()
+        viewModel.engine.actionHandler.onRightPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_UP,
       KeyEvent.KEYCODE_C,
         -> {
-        engine.actionHandler.onDropPressed()
+        viewModel.engine.actionHandler.onDropPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_DOWN,
       KeyEvent.KEYCODE_D,
         -> {
-        engine.actionHandler.onDownPressed()
+        viewModel.engine.actionHandler.onDownPressed()
         true
       }
 
@@ -88,7 +95,7 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_G,
       KeyEvent.KEYCODE_H,
         -> {
-        engine.actionHandler.onRotateClockwisePressed()
+        viewModel.engine.actionHandler.onRotateClockwisePressed()
         true
       }
 
@@ -97,14 +104,14 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_J,
       KeyEvent.KEYCODE_I,
         -> {
-        engine.actionHandler.onRotateCounterClockwisePressed()
+        viewModel.engine.actionHandler.onRotateCounterClockwisePressed()
         true
       }
 
       KeyEvent.KEYCODE_BUTTON_START,
       KeyEvent.KEYCODE_O,
         -> {
-        engine.actionHandler.onPausePressed()
+        viewModel.engine.actionHandler.onPausePressed()
         true
       }
 

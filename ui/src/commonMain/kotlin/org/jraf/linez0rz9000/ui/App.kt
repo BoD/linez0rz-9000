@@ -78,9 +78,9 @@ private fun NextPieces(
 ) {
   Column(
     modifier = Modifier
-      .padding(top = 4.dp, bottom = 4.dp)
+      .padding(top = 24.dp, bottom = 24.dp)
       .width(64.dp),
-    verticalArrangement = Arrangement.spacedBy(4.dp),
+    verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
     for (piece in nextPieces) {
       NextPiece(
