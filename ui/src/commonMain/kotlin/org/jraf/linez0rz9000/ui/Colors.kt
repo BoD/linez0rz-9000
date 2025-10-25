@@ -26,9 +26,32 @@
 package org.jraf.linez0rz9000.ui
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import org.jraf.linez0rz9000.engine.Engine
 
+
+private val emptyRunningPausedColor = Color.Black
+private val emptyGameOverColor = Color.DarkGray
+
+private val pieceRunningColor = Color.Red
+private val piecePausedGameOverColor = Color.LightGray
+
+private val shadowRunningColor = pieceRunningColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
+private val shadowPausedColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
+private val shadowGameOverColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyGameOverColor)
+
+fun emptyColor(state: Engine.State): Color = when (state) {
+  Engine.State.Running, Engine.State.Paused -> emptyRunningPausedColor
+  Engine.State.GameOver -> emptyGameOverColor
+}
+
 fun pieceColor(state: Engine.State): Color = when (state) {
-  Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
-  Engine.State.Running -> Color.Red
+  Engine.State.Running -> pieceRunningColor
+  Engine.State.Paused, Engine.State.GameOver -> piecePausedGameOverColor
+}
+
+fun shadowColor(state: Engine.State): Color = when (state) {
+  Engine.State.Running -> shadowRunningColor
+  Engine.State.Paused -> shadowPausedColor
+  Engine.State.GameOver -> shadowGameOverColor
 }

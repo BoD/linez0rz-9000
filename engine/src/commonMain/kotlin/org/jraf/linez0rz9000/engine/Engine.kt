@@ -69,7 +69,10 @@ class Engine(
       // Don't show the current piece if the game is over
       board
     } else {
-      board.withPiece(piece, Cell.Piece)
+      val shadowPiece = shadowPiece(piece)
+      board
+        .withPiece(shadowPiece, Cell.ShadowPiece)
+        .withPiece(piece, Cell.Piece)
     }
   }
     .stateIn(
@@ -331,15 +334,26 @@ class Engine(
     }
     return true
   }
-}
 
-private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board {
-  return toMutableBoard().apply {
-    for (x in 0..<4) {
-      for (y in 0..<4) {
-        if (piece.isFilled(x, y)) {
-          if (piece.y + y >= 0) {
-            this[piece.x + x, piece.y + y] = cell
+  private fun shadowPiece(piece: PieceWithPosition): PieceWithPosition {
+    var p = piece.copy()
+    while (true) {
+      val candidatePiece = p.copy(y = p.y + 1)
+      if (!pieceCanGo(candidatePiece)) {
+        return p
+      }
+      p = candidatePiece
+    }
+  }
+
+  private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board {
+    return toMutableBoard().apply {
+      for (x in 0..<4) {
+        for (y in 0..<4) {
+          if (piece.isFilled(x, y)) {
+            if (piece.y + y >= 0) {
+              this[piece.x + x, piece.y + y] = cell
+            }
           }
         }
       }

@@ -31,4 +31,6 @@ sealed interface Cell {
   object Debris : Cell
 
   object Piece : Cell
+
+  object ShadowPiece : Cell
 }

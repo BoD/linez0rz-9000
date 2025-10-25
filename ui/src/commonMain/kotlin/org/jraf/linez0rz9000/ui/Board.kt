@@ -73,12 +73,11 @@ fun Board(board: Board, state: Engine.State) {
             height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
           ),
           color = when (cell) {
-            Cell.Empty -> when (state) {
-              Engine.State.GameOver -> Color.DarkGray
-              Engine.State.Paused, Engine.State.Running -> Color.Black
-            }
+            Cell.Empty -> emptyColor(state)
 
             Cell.Piece -> pieceColor(state)
+
+            Cell.ShadowPiece -> shadowColor(state)
 
             Cell.Debris -> when (state) {
               Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
@@ -90,3 +89,4 @@ fun Board(board: Board, state: Engine.State) {
     }
   }
 }
+
