@@ -33,15 +33,52 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import org.jraf.linez0rz9000.engine.storage.Storage
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class Engine(
-  width: Int = 10,
-  height: Int = 22,
-  nextPiecesSize: Int = 4,
-  private val delay: Duration = .2.seconds,
-) {
+class Engine {
+  private constructor(
+    board: Board,
+    nextPieces: NextPieces,
+    pieceWithPosition: PieceWithPosition?,
+    delay: Duration,
+  ) {
+    this.delay = delay
+    _board = MutableStateFlow<Board>(board.toMutableBoard())
+    _nextPieces = nextPieces
+    this.nextPieces = _nextPieces.nextPieces
+    _piece = MutableStateFlow<PieceWithPosition>(pieceWithPosition ?: nextPiece())
+    this.piece = _piece
+    this.board = getBoardStateFlow()
+  }
+
+  constructor(
+    board: Board,
+    nextPieces: List<Piece>,
+    pieceWithPosition: PieceWithPosition?,
+    delay: Duration = .2.seconds,
+  ) : this(
+    board = board,
+    nextPieces = NextPieces(nextPieces),
+    pieceWithPosition = pieceWithPosition,
+    delay = delay,
+  )
+
+  constructor(
+    width: Int = 10,
+    height: Int = 22,
+    nextPiecesSize: Int = 4,
+    delay: Duration = .2.seconds,
+  ) : this(
+    board = MutableBoard(width, height),
+    nextPieces = NextPieces(size = nextPiecesSize),
+    pieceWithPosition = null,
+    delay = delay,
+  )
+
+  private val delay: Duration
+
   sealed interface State {
     data object Running : State
     data object GameOver : State
@@ -53,16 +90,19 @@ class Engine(
   private val _state = MutableStateFlow<State>(State.Running)
   val state: StateFlow<State> = _state
 
-  private val _board = MutableStateFlow<Board>(MutableBoard(width, height))
+  private val _board: MutableStateFlow<Board>
 
-  private val _nextPieces = NextPieces(size = nextPiecesSize)
-  val nextPieces: StateFlow<List<Piece>> = _nextPieces.nextPieces
+  private val _nextPieces: NextPieces
+  val nextPieces: StateFlow<List<Piece>>
 
-  private var piece = MutableStateFlow<PieceWithPosition>(nextPiece())
+  private var _piece: MutableStateFlow<PieceWithPosition>
+  val piece: StateFlow<PieceWithPosition>
 
-  val board: StateFlow<Board> = combine(
+  val board: StateFlow<Board>
+
+  private fun getBoardStateFlow(): StateFlow<Board> = combine(
     _board,
-    piece,
+    _piece,
     _state,
   ) { board, piece, state ->
     if (state == State.GameOver) {
@@ -78,7 +118,7 @@ class Engine(
     .stateIn(
       scope = coroutineScope,
       started = SharingStarted.Lazily,
-      initialValue = _board.value.withPiece(piece.value, Cell.Piece),
+      initialValue = _board.value.withPiece(_piece.value, Cell.Piece),
     )
 
   data class PieceWithPosition(
@@ -99,10 +139,10 @@ class Engine(
   val actionHandler = object : ActionHandler {
     override fun onLeftPressed() {
       if (_state.value != State.Running) return
-      val currentPiece = piece.value
+      val currentPiece = _piece.value
       val movedPiece = currentPiece.copy(x = currentPiece.x - 1)
       if (pieceCanGo(movedPiece)) {
-        piece.value = movedPiece
+        _piece.value = movedPiece
 
         if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
           scheduler.schedule(delay * 3) {
@@ -114,10 +154,10 @@ class Engine(
 
     override fun onRightPressed() {
       if (_state.value != State.Running) return
-      val currentPiece = piece.value
+      val currentPiece = _piece.value
       val movedPiece = currentPiece.copy(x = currentPiece.x + 1)
       if (pieceCanGo(movedPiece)) {
-        piece.value = movedPiece
+        _piece.value = movedPiece
 
         if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
           scheduler.schedule(delay * 3) {
@@ -129,28 +169,28 @@ class Engine(
 
     override fun onRotateClockwisePressed() {
       if (_state.value != State.Running) return
-      val currentPiece = piece.value
+      val currentPiece = _piece.value
       var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation + 1)
       applyPieceIfPossible(rotatedPiece)
     }
 
     override fun onRotateCounterClockwisePressed() {
       if (_state.value != State.Running) return
-      val currentPiece = piece.value
+      val currentPiece = _piece.value
       var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation - 1)
       applyPieceIfPossible(rotatedPiece)
     }
 
     override fun onDownPressed() {
       if (_state.value != State.Running) return
-      if (pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+      if (pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
         movePieceDown()
       }
     }
 
     override fun onDropPressed() {
       if (_state.value != State.Running) return
-      while (pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+      while (pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
         movePieceDown()
       }
       scheduler.schedule(Duration.ZERO) {
@@ -170,7 +210,7 @@ class Engine(
         }
 
         State.Paused -> {
-          unpause()
+          resume()
         }
 
         else -> {}
@@ -185,7 +225,7 @@ class Engine(
       for (xOffset in xOffsets) {
         val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
         if (pieceCanGo(candidatePiece)) {
-          this.piece.value = candidatePiece
+          this._piece.value = candidatePiece
 
           if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
             scheduler.schedule(delay * 3) {
@@ -218,14 +258,14 @@ class Engine(
   private fun gameLoop() {
     if (_state.value == State.GameOver) return
 
-    if (!pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+    if (!pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
       handlePieceLanded()
       scheduler.schedule(delay) {
         gameLoop()
       }
     } else {
       movePieceDown()
-      val nextDelay = if (!pieceCanGo((piece.value.copy(y = piece.value.y + 1)))) {
+      val nextDelay = if (!pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
         delay * 3
       } else {
         delay
@@ -242,7 +282,7 @@ class Engine(
     scheduler.cancel()
   }
 
-  fun unpause() {
+  fun resume() {
     if (_state.value != State.Paused) error("Wrong state: ${_state.value}")
     _state.value = State.Running
     scheduler.schedule(delay) {
@@ -259,7 +299,7 @@ class Engine(
   fun restart() {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
-    piece.value = nextPiece()
+    _piece.value = nextPiece()
     _state.value = State.Running
     start()
   }
@@ -299,13 +339,13 @@ class Engine(
   }
 
   private fun movePieceDown() {
-    val currentPiece = piece.value
-    piece.value = currentPiece.copy(y = currentPiece.y + 1)
+    val currentPiece = _piece.value
+    _piece.value = currentPiece.copy(y = currentPiece.y + 1)
   }
 
   private fun handlePieceLanded() {
     // The piece is now debris
-    _board.value = _board.value.withPiece(piece.value, Cell.Debris)
+    _board.value = _board.value.withPiece(_piece.value, Cell.Debris)
 
     removeLines()
 
@@ -314,7 +354,7 @@ class Engine(
       // Game over!
       stop()
     } else {
-      piece.value = nextPiece
+      _piece.value = nextPiece
     }
   }
 
@@ -346,7 +386,7 @@ class Engine(
     }
   }
 
-  private fun Board.withPiece(piece: Engine.PieceWithPosition, cell: Cell): Board {
+  private fun Board.withPiece(piece: PieceWithPosition, cell: Cell): Board {
     return toMutableBoard().apply {
       for (x in 0..<4) {
         for (y in 0..<4) {
@@ -358,5 +398,27 @@ class Engine(
         }
       }
     }
+  }
+}
+
+
+suspend fun Storage.saveEngineState(engine: Engine) {
+  saveBoard(engine.board.value)
+  saveNextPieces(engine.nextPieces.value)
+  savePieceWithPosition(engine.piece.value)
+}
+
+suspend fun Storage.loadEngine(): Engine {
+  val savedBoard = getBoard()
+  val savedNextPieces = getNextPieces()
+  val savedPieceWithPosition = getPieceWithPosition()
+  return if (savedBoard != null && savedNextPieces != null && savedPieceWithPosition != null) {
+    Engine(
+      board = savedBoard,
+      nextPieces = savedNextPieces,
+      pieceWithPosition = savedPieceWithPosition,
+    )
+  } else {
+    Engine()
   }
 }

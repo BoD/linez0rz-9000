@@ -25,9 +25,48 @@
 
 package org.jraf.linez0rz9000
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.jraf.linez0rz9000.engine.Engine
+import org.jraf.linez0rz9000.engine.loadEngine
+import org.jraf.linez0rz9000.engine.saveEngineState
+import org.jraf.linez0rz9000.engine.storage.Storage
 
-class MainViewModel : ViewModel() {
-  val engine = Engine().also { it.start() }
+class MainViewModel(application: Application) : AndroidViewModel(application = application) {
+  private val storage = Storage(getApplication<Application>().filesDir.resolve("storage.preferences_pb").absolutePath)
+
+  val engine: StateFlow<Engine?> = flow {
+    emit(
+      storage.loadEngine().also {
+        it.start()
+        it.pause()
+      },
+    )
+  }.stateIn(viewModelScope, started = SharingStarted.Lazily, initialValue = null)
+
+  fun saveEngineState() {
+    val engine = engine.value ?: return
+    viewModelScope.launch {
+      storage.saveEngineState(engine = engine)
+    }
+  }
+
+  private var isPaused: Boolean = false
+
+  fun pause() {
+    isPaused = true
+    engine.value?.pause()
+  }
+
+  fun resume() {
+    if (!isPaused) return
+    engine.value?.resume()
+    isPaused = false
+  }
 }

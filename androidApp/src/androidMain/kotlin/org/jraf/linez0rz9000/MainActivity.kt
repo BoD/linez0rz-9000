@@ -35,6 +35,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.jraf.linez0rz9000.ui.App
@@ -47,12 +49,21 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     setContent {
-      Scaffold(containerColor = Color.Transparent) { contentPadding ->
-        Box(modifier = Modifier.padding(contentPadding)) {
-          App(viewModel.engine)
+      val engine by viewModel.engine.collectAsState()
+      if (engine != null) {
+        Scaffold(containerColor = Color.Transparent) { contentPadding ->
+          Box(modifier = Modifier.padding(contentPadding)) {
+            App(engine!!)
+          }
         }
       }
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    viewModel.pause()
+    viewModel.saveEngineState()
   }
 
   @SuppressLint("RestrictedApi")
@@ -65,28 +76,28 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_DPAD_LEFT,
       KeyEvent.KEYCODE_E,
         -> {
-        viewModel.engine.actionHandler.onLeftPressed()
+        viewModel.engine.value?.actionHandler?.onLeftPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_RIGHT,
       KeyEvent.KEYCODE_F,
         -> {
-        viewModel.engine.actionHandler.onRightPressed()
+        viewModel.engine.value?.actionHandler?.onRightPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_UP,
       KeyEvent.KEYCODE_C,
         -> {
-        viewModel.engine.actionHandler.onDropPressed()
+        viewModel.engine.value?.actionHandler?.onDropPressed()
         true
       }
 
       KeyEvent.KEYCODE_DPAD_DOWN,
       KeyEvent.KEYCODE_D,
         -> {
-        viewModel.engine.actionHandler.onDownPressed()
+        viewModel.engine.value?.actionHandler?.onDownPressed()
         true
       }
 
@@ -95,7 +106,7 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_G,
       KeyEvent.KEYCODE_H,
         -> {
-        viewModel.engine.actionHandler.onRotateClockwisePressed()
+        viewModel.engine.value?.actionHandler?.onRotateClockwisePressed()
         true
       }
 
@@ -104,14 +115,14 @@ class MainActivity : ComponentActivity() {
       KeyEvent.KEYCODE_J,
       KeyEvent.KEYCODE_I,
         -> {
-        viewModel.engine.actionHandler.onRotateCounterClockwisePressed()
+        viewModel.engine.value?.actionHandler?.onRotateCounterClockwisePressed()
         true
       }
 
       KeyEvent.KEYCODE_BUTTON_START,
       KeyEvent.KEYCODE_O,
         -> {
-        viewModel.engine.actionHandler.onPausePressed()
+        viewModel.engine.value?.actionHandler?.onPausePressed()
         true
       }
 

@@ -28,97 +28,107 @@ package org.jraf.linez0rz9000.desktop
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.jraf.linez0rz9000.engine.Engine
+import kotlinx.coroutines.runBlocking
+import org.jraf.linez0rz9000.engine.loadEngine
+import org.jraf.linez0rz9000.engine.saveEngineState
+import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
 
-fun main() = application {
-  val engine = Engine()
+fun main() {
+  val storage = Storage("${System.getProperty("user.home")}/.linez0rz9000/storage.preferences_pb")
+  val engine = runBlocking { storage.loadEngine() }
   engine.start()
-  GlobalScope.launch {
-    engine.state.collect {
-      println("State change $it")
-    }
-  }
-
-  Window(
-    onCloseRequest = ::exitApplication,
-    title = "linez0rz 9000",
-    onKeyEvent = { keyEvent ->
-      if (keyEvent.type != KeyEventType.KeyDown) return@Window false
-      when (keyEvent.key) {
-        Key.DirectionLeft,
-        Key.E,
-          -> {
-          engine.actionHandler.onLeftPressed()
-          true
+  application {
+    Window(
+      onCloseRequest = {
+        runBlocking {
+          storage.saveEngineState(engine = engine)
         }
+        exitApplication()
+      },
+      title = "linez0rz 9000",
+      onKeyEvent = { keyEvent ->
+        if (keyEvent.type != KeyEventType.KeyDown) return@Window false
+        when (keyEvent.key) {
+          Key.DirectionLeft,
+          Key.E,
+            -> {
+            engine.actionHandler.onLeftPressed()
+            true
+          }
 
-        Key.DirectionRight,
-        Key.F,
-          -> {
-          engine.actionHandler.onRightPressed()
-          true
-        }
+          Key.DirectionRight,
+          Key.F,
+            -> {
+            engine.actionHandler.onRightPressed()
+            true
+          }
 
-        Key.Spacebar,
-        Key.C,
-          -> {
-          engine.actionHandler.onDropPressed()
-          true
-        }
+          Key.Spacebar,
+          Key.C,
+            -> {
+            engine.actionHandler.onDropPressed()
+            true
+          }
 
-        Key.DirectionDown,
-        Key.D,
-          -> {
-          engine.actionHandler.onDownPressed()
-          true
-        }
+          Key.DirectionDown,
+          Key.D,
+            -> {
+            engine.actionHandler.onDownPressed()
+            true
+          }
 
-        Key.DirectionUp,
-        Key.X,
-        Key.G,
-        Key.H,
-          -> {
-          engine.actionHandler.onRotateClockwisePressed()
-          true
-        }
+          Key.DirectionUp,
+          Key.X,
+          Key.G,
+          Key.H,
+            -> {
+            engine.actionHandler.onRotateClockwisePressed()
+            true
+          }
 
-        Key.Z,
-        Key.J,
-        Key.I,
-          -> {
-          engine.actionHandler.onRotateCounterClockwisePressed()
-          true
-        }
+          Key.Z,
+          Key.J,
+          Key.I,
+            -> {
+            engine.actionHandler.onRotateCounterClockwisePressed()
+            true
+          }
 
-        Key.P,
-        Key.O,
-          -> {
-          engine.actionHandler.onPausePressed()
-          true
-        }
+          Key.P,
+          Key.O,
+            -> {
+            engine.actionHandler.onPausePressed()
+            true
+          }
 
-        else -> {
-          false
+          else -> {
+            false
+          }
         }
-      }
-    },
-  ) {
-    Box(
-      modifier = Modifier
-        .safeContentPadding()
-        .fillMaxSize(),
+      },
     ) {
-      App(engine)
+      LaunchedEffect(LocalWindowInfo.current.isWindowFocused) {
+        storage.saveEngineState(engine = engine)
+      }
+
+      Box(
+        modifier = Modifier
+          .safeContentPadding()
+          .fillMaxSize(),
+      ) {
+        App(engine)
+      }
     }
   }
 }
+

@@ -26,6 +26,7 @@
 package org.jraf.linez0rz9000.engine
 
 sealed class Piece(
+  val name: Char,
   shapes: List<List<String>>,
 ) {
   class Shape(private val array: BooleanArray) {
@@ -120,9 +121,23 @@ sealed class Piece(
         I, O, T, S, Z, J, L,
       )
     }
+
+    fun fromName(name: Char): Piece {
+      return when (name) {
+        'I' -> I
+        'O' -> O
+        'T' -> T
+        'S' -> S
+        'Z' -> Z
+        'J' -> J
+        'L' -> L
+        else -> error("Unknown piece name: $name")
+      }
+    }
   }
 
   object I : Piece(
+    name = 'I',
     listOf(
       listOf(
         "    ",
@@ -155,6 +170,7 @@ sealed class Piece(
   )
 
   object O : Piece(
+    name = 'O',
     listOf(
       listOf(
         "    ",
@@ -167,6 +183,7 @@ sealed class Piece(
 
 
   object T : Piece(
+    name = 'T',
     listOf(
       listOf(
         " #  ",
@@ -199,6 +216,7 @@ sealed class Piece(
   )
 
   object S : Piece(
+    name = 'S',
     listOf(
       listOf(
         " ## ",
@@ -232,6 +250,7 @@ sealed class Piece(
     )
 
   object Z : Piece(
+    name = 'Z',
     listOf(
       listOf(
         "##  ",
@@ -264,6 +283,7 @@ sealed class Piece(
   )
 
   object J : Piece(
+    name = 'J',
     listOf(
       listOf(
         "#   ",
@@ -293,6 +313,7 @@ sealed class Piece(
   )
 
   object L : Piece(
+    name = 'L',
     listOf(
       listOf(
         "  # ",

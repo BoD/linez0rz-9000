@@ -157,7 +157,7 @@ private fun GameControlsPanel(
           modifier = Modifier.align(Alignment.Center),
           onClick = {
             when (state) {
-              is Engine.State.Paused -> engine.unpause()
+              is Engine.State.Paused -> engine.resume()
               is Engine.State.GameOver -> engine.restart()
               else -> throw IllegalStateException()
             }

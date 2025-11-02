@@ -27,12 +27,24 @@ package org.jraf.linez0rz9000.engine
 
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class NextPieces(
-  private val size: Int,
-) {
-  private val piecesBuffer: MutableList<Piece> = mutableListOf<Piece>().ensureCapacity(size)
+class NextPieces {
+  private val size: Int
 
-  val nextPieces: MutableStateFlow<List<Piece>> = MutableStateFlow(piecesBuffer.take(size))
+  private val piecesBuffer: MutableList<Piece>
+
+  val nextPieces: MutableStateFlow<List<Piece>>
+
+  constructor(size: Int) {
+    this.size = size
+    this.piecesBuffer = mutableListOf<Piece>().ensureCapacity(size)
+    this.nextPieces = MutableStateFlow(piecesBuffer.take(size))
+  }
+
+  constructor(pieces: List<Piece>) {
+    this.size = pieces.size
+    this.piecesBuffer = pieces.toMutableList().ensureCapacity(size)
+    this.nextPieces = MutableStateFlow(pieces)
+  }
 
   internal fun getNextPiece(): Piece {
     return piecesBuffer.removeAt(0).also {

@@ -30,6 +30,9 @@ kotlin {
 
       dependencies {
         implementation(libs.kotlinx.coroutines.core)
+
+        implementation(libs.androidx.datastore)
+        implementation(libs.androidx.datastore.preferences)
       }
     }
   }
