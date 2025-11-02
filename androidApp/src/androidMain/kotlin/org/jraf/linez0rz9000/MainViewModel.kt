@@ -43,10 +43,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application = a
 
   val engine: StateFlow<Engine?> = flow {
     emit(
-      storage.loadEngine().also {
-        it.start()
-        it.pause()
-      },
+      storage.loadEngine(),
     )
   }.stateIn(viewModelScope, started = SharingStarted.Lazily, initialValue = null)
 

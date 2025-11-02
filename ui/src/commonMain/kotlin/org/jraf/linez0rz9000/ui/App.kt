@@ -30,9 +30,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -55,6 +58,8 @@ fun App(engine: Engine) {
   val board: Board by engine.board.collectAsState()
   val state: Engine.State by engine.state.collectAsState()
   val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
+  val lines: Int by engine.lines.collectAsState()
+  val maxLines: Int by engine.maxLines.collectAsState()
   Row {
     Box(
       modifier = Modifier
@@ -63,10 +68,32 @@ fun App(engine: Engine) {
       Board(board = board, state = state)
     }
 
-    NextPieces(
-      nextPieces = nextPieces,
-      state = state,
-    )
+    Column(modifier = Modifier.width(64.dp)) {
+      NextPieces(
+        nextPieces = nextPieces,
+        state = state,
+      )
+
+      Spacer(modifier = Modifier.weight(1F))
+
+      Text(
+        color = Color.Red,
+        text = "$lines",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+      )
+
+      Spacer(modifier = Modifier.padding(top = 16.dp))
+
+      Text(
+        color = Color.Red,
+        text = "$maxLines",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+      )
+
+      Spacer(modifier = Modifier.padding(top = 16.dp))
+    }
   }
   GameControlsPanel(engine = engine, state = state)
 }

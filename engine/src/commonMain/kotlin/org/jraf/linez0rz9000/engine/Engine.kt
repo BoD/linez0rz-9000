@@ -42,6 +42,8 @@ class Engine {
     board: Board,
     nextPieces: NextPieces,
     pieceWithPosition: PieceWithPosition?,
+    lines: Int,
+    maxLines: Int,
     delay: Duration,
   ) {
     this.delay = delay
@@ -51,17 +53,27 @@ class Engine {
     _piece = MutableStateFlow<PieceWithPosition>(pieceWithPosition ?: nextPiece())
     this.piece = _piece
     this.board = getBoardStateFlow()
+
+    _lines = MutableStateFlow(lines)
+    this.lines = _lines
+
+    _maxLines = MutableStateFlow(maxLines)
+    this.maxLines = _maxLines
   }
 
   constructor(
     board: Board,
     nextPieces: List<Piece>,
     pieceWithPosition: PieceWithPosition?,
+    lines: Int,
+    maxLines: Int,
     delay: Duration = .2.seconds,
   ) : this(
     board = board,
     nextPieces = NextPieces(nextPieces),
     pieceWithPosition = pieceWithPosition,
+    lines = lines,
+    maxLines = maxLines,
     delay = delay,
   )
 
@@ -74,6 +86,8 @@ class Engine {
     board = MutableBoard(width, height),
     nextPieces = NextPieces(size = nextPiecesSize),
     pieceWithPosition = null,
+    lines = 0,
+    maxLines = 0,
     delay = delay,
   )
 
@@ -87,7 +101,7 @@ class Engine {
 
   private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-  private val _state = MutableStateFlow<State>(State.Running)
+  private val _state = MutableStateFlow<State>(State.Paused)
   val state: StateFlow<State> = _state
 
   private val _board: MutableStateFlow<Board>
@@ -95,10 +109,16 @@ class Engine {
   private val _nextPieces: NextPieces
   val nextPieces: StateFlow<List<Piece>>
 
-  private var _piece: MutableStateFlow<PieceWithPosition>
+  private val _piece: MutableStateFlow<PieceWithPosition>
   val piece: StateFlow<PieceWithPosition>
 
   val board: StateFlow<Board>
+
+  private val _lines: MutableStateFlow<Int>
+  val lines: StateFlow<Int>
+
+  private val _maxLines: MutableStateFlow<Int>
+  val maxLines: StateFlow<Int>
 
   private fun getBoardStateFlow(): StateFlow<Board> = combine(
     _board,
@@ -249,7 +269,8 @@ class Engine {
   }
 
   fun start() {
-    if (_state.value != State.Running) error("Wrong state: ${_state.value}")
+    if (_state.value == State.Running) error("Wrong state: ${_state.value}")
+    _state.value = State.Running
     scheduler.schedule(delay) {
       gameLoop()
     }
@@ -300,13 +321,14 @@ class Engine {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
     _piece.value = nextPiece()
-    _state.value = State.Running
+    _lines.value = 0
     start()
   }
 
   private fun removeLines() {
     var board = _board.value
     var hasChanges = false
+    var linesRemoved = 0
     for (y in 0..<board.height) {
       var isFullLine = true
       for (x in 0..<board.width) {
@@ -316,11 +338,16 @@ class Engine {
         }
       }
       if (isFullLine) {
+        linesRemoved++
         hasChanges = true
         board = board.withLineRemoved(y)
       }
     }
     if (hasChanges) {
+      _lines.value += linesRemoved
+      if (_lines.value > _maxLines.value) {
+        _maxLines.value = _lines.value
+      }
       _board.value = board
     }
   }
@@ -406,17 +433,23 @@ suspend fun Storage.saveEngineState(engine: Engine) {
   saveBoard(engine.board.value)
   saveNextPieces(engine.nextPieces.value)
   savePieceWithPosition(engine.piece.value)
+  saveLines(engine.lines.value)
+  saveMaxLines(engine.maxLines.value)
 }
 
 suspend fun Storage.loadEngine(): Engine {
   val savedBoard = getBoard()
   val savedNextPieces = getNextPieces()
   val savedPieceWithPosition = getPieceWithPosition()
-  return if (savedBoard != null && savedNextPieces != null && savedPieceWithPosition != null) {
+  val savedLines = getLines()
+  val savedMaxLines = getMaxLines()
+  return if (savedBoard != null && savedNextPieces != null && savedPieceWithPosition != null && savedLines != null && savedMaxLines != null) {
     Engine(
       board = savedBoard,
       nextPieces = savedNextPieces,
       pieceWithPosition = savedPieceWithPosition,
+      lines = savedLines,
+      maxLines = savedMaxLines,
     )
   } else {
     Engine()

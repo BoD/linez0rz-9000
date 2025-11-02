@@ -29,6 +29,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -67,6 +68,24 @@ class Storage(private val path: String) {
 
   suspend fun savePieceWithPosition(pieceWithPosition: Engine.PieceWithPosition) {
     dataStore.edit { it[KEY_PIECE_WITH_POSITION] = pieceWithPosition.toStorageString() }
+  }
+
+  suspend fun getLines(): Int? =
+    dataStore.data.map { preferences ->
+      preferences[KEY_LINES]
+    }.first()
+
+  suspend fun saveLines(lines: Int) {
+    dataStore.edit { it[KEY_LINES] = lines }
+  }
+
+  suspend fun getMaxLines(): Int? =
+    dataStore.data.map { preferences ->
+      preferences[KEY_MAX_LINES]
+    }.first()
+
+  suspend fun saveMaxLines(maxLines: Int) {
+    dataStore.edit { it[KEY_MAX_LINES] = maxLines }
   }
 
   private fun Board.toStorageString(): String {
@@ -121,6 +140,8 @@ class Storage(private val path: String) {
     private val KEY_BOARD = stringPreferencesKey("board")
     private val KEY_NEXT_PIECES = stringPreferencesKey("nextPieces")
     private val KEY_PIECE_WITH_POSITION = stringPreferencesKey("pieceWithPosition")
+    private val KEY_LINES = intPreferencesKey("lines")
+    private val KEY_MAX_LINES = intPreferencesKey("maxLines")
   }
 }
 
