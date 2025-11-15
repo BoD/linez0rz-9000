@@ -10,11 +10,9 @@ plugins {
 }
 
 kotlin {
-  jvm("desktop")
+  jvm()
 
   sourceSets {
-    val desktopMain by getting
-
     commonMain {
       dependencies {
         implementation(compose.runtime)
@@ -23,8 +21,6 @@ kotlin {
         implementation(compose.ui)
         implementation(compose.components.resources)
         implementation(compose.components.uiToolingPreview)
-        implementation(libs.androidx.lifecycle.viewmodel)
-        implementation(libs.androidx.lifecycle.runtimeCompose)
 
         api(project(":engine"))
       }

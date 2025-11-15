@@ -55,10 +55,13 @@ import kotlin.math.min
 
 @Composable
 fun App(engine: Engine) {
+//  val workbenchFontFamily = FontFamily(Font(Res.font.Workbench, FontWeight.Normal))
+
   val board: Board by engine.board.collectAsState()
   val state: Engine.State by engine.state.collectAsState()
   val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
-  val lines: Int by engine.lines.collectAsState()
+  val sessionLines: Int by engine.sessionLines.collectAsState()
+  val gameLines: Int by engine.gameLines.collectAsState()
   val maxLines: Int by engine.maxLines.collectAsState()
   Row {
     Box(
@@ -68,7 +71,10 @@ fun App(engine: Engine) {
       Board(board = board, state = state)
     }
 
-    Column(modifier = Modifier.width(64.dp)) {
+    Column(
+      modifier = Modifier.width(64.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
       NextPieces(
         nextPieces = nextPieces,
         state = state,
@@ -79,9 +85,21 @@ fun App(engine: Engine) {
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
         color = Color.Red,
-        text = "$lines",
+        text = "$sessionLines",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
+//        fontFamily = workbenchFontFamily,
+      )
+
+      Spacer(modifier = Modifier.padding(top = 16.dp))
+
+      Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
+        color = Color.Red,
+        text = "$gameLines",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+//        fontFamily = workbenchFontFamily,
       )
 
       Spacer(modifier = Modifier.padding(top = 16.dp))
@@ -92,6 +110,7 @@ fun App(engine: Engine) {
         text = "$maxLines",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
+//        fontFamily = workbenchFontFamily,
       )
 
       Spacer(modifier = Modifier.padding(top = 16.dp))

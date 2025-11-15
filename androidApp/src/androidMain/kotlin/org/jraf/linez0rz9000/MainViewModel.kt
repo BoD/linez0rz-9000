@@ -54,16 +54,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application = a
     }
   }
 
-  private var isPaused: Boolean = false
-
   fun pause() {
-    isPaused = true
     engine.value?.pause()
-  }
-
-  fun resume() {
-    if (!isPaused) return
-    engine.value?.resume()
-    isPaused = false
   }
 }

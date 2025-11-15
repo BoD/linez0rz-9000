@@ -54,8 +54,11 @@ class Engine {
     this.piece = _piece
     this.board = getBoardStateFlow()
 
-    _lines = MutableStateFlow(lines)
-    this.lines = _lines
+    _sessionLines = MutableStateFlow(0)
+    this.sessionLines = _sessionLines
+
+    _gameLines = MutableStateFlow(lines)
+    this.gameLines = _gameLines
 
     _maxLines = MutableStateFlow(maxLines)
     this.maxLines = _maxLines
@@ -114,8 +117,11 @@ class Engine {
 
   val board: StateFlow<Board>
 
-  private val _lines: MutableStateFlow<Int>
-  val lines: StateFlow<Int>
+  private val _sessionLines: MutableStateFlow<Int>
+  val sessionLines: StateFlow<Int>
+
+  private val _gameLines: MutableStateFlow<Int>
+  val gameLines: StateFlow<Int>
 
   private val _maxLines: MutableStateFlow<Int>
   val maxLines: StateFlow<Int>
@@ -328,7 +334,7 @@ class Engine {
   }
 
   fun pause() {
-    if (_state.value != State.Running) error("Wrong state: ${_state.value}")
+    if (_state.value != State.Running) return
     _state.value = State.Paused
     scheduler.cancel()
   }
@@ -351,7 +357,8 @@ class Engine {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
     _piece.value = nextPiece()
-    _lines.value = 0
+    _sessionLines.value = 0
+    _gameLines.value = 0
     start()
   }
 
@@ -374,9 +381,10 @@ class Engine {
       }
     }
     if (hasChanges) {
-      _lines.value += linesRemoved
-      if (_lines.value > _maxLines.value) {
-        _maxLines.value = _lines.value
+      _sessionLines.value += linesRemoved
+      _gameLines.value += linesRemoved
+      if (_gameLines.value > _maxLines.value) {
+        _maxLines.value = _gameLines.value
       }
       _board.value = board
     }
@@ -409,6 +417,8 @@ class Engine {
     val nextPiece = nextPiece()
     if (!pieceCanGo(nextPiece)) {
       // Game over!
+      // TODO I think this is incorrect, see https://harddrop.com/wiki/Top_out
+      // See also https://harddrop.com/wiki/Spawn_Location
       stop()
     } else {
       _piece.value = nextPiece
@@ -462,7 +472,7 @@ suspend fun Storage.saveEngineState(engine: Engine) {
   saveBoard(engine.board.value)
   saveNextPieces(engine.nextPieces.value)
   savePieceWithPosition(engine.piece.value)
-  saveLines(engine.lines.value)
+  saveLines(engine.gameLines.value)
   saveMaxLines(engine.maxLines.value)
 }
 
