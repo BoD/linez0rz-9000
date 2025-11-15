@@ -44,10 +44,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import linez0rz_9000.ui.generated.resources.Res
+import linez0rz_9000.ui.generated.resources.Workbench
+import org.jetbrains.compose.resources.Font
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.Piece
@@ -55,7 +59,7 @@ import kotlin.math.min
 
 @Composable
 fun App(engine: Engine) {
-//  val workbenchFontFamily = FontFamily(Font(Res.font.Workbench, FontWeight.Normal))
+  val workbenchFontFamily = FontFamily(Font(Res.font.Workbench, FontWeight.Normal))
 
   val board: Board by engine.board.collectAsState()
   val state: Engine.State by engine.state.collectAsState()
@@ -84,33 +88,33 @@ fun App(engine: Engine) {
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
-        color = Color.Red,
+        color = pieceColor(state),
         text = "$sessionLines",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
-//        fontFamily = workbenchFontFamily,
+        fontFamily = workbenchFontFamily,
       )
 
       Spacer(modifier = Modifier.padding(top = 16.dp))
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
-        color = Color.Red,
+        color = pieceColor(state),
         text = "$gameLines",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
-//        fontFamily = workbenchFontFamily,
+        fontFamily = workbenchFontFamily,
       )
 
       Spacer(modifier = Modifier.padding(top = 16.dp))
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
-        color = Color.Red,
+        color = pieceColor(state),
         text = "$maxLines",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
-//        fontFamily = workbenchFontFamily,
+        fontFamily = workbenchFontFamily,
       )
 
       Spacer(modifier = Modifier.padding(top = 16.dp))

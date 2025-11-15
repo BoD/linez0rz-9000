@@ -1,9 +1,9 @@
-
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.androidLibrary)
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
   alias(libs.plugins.composeHotReload)
@@ -11,6 +11,7 @@ plugins {
 
 kotlin {
   jvm()
+  androidTarget()
 
   sourceSets {
     commonMain {
@@ -26,6 +27,11 @@ kotlin {
       }
     }
   }
+}
+
+android {
+  namespace = "org.jraf.linez0rz9000.ui"
+  compileSdk = libs.versions.android.compileSdk.get().toInt()
 }
 
 tasks.withType<KotlinCompile>().all {
