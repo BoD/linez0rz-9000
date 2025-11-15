@@ -141,7 +141,7 @@ class Engine {
       initialValue = _board.value.withPiece(_piece.value, Cell.Piece),
     )
 
-  data class PieceWithPosition(
+  class PieceWithPosition(
     val piece: Piece,
     val x: Int,
     val y: Int,
@@ -152,6 +152,39 @@ class Engine {
     }
 
     fun isFilled(x: Int, y: Int) = shape().isFilled(x, y)
+
+    fun shifted(x: Int, y: Int): PieceWithPosition {
+      return PieceWithPosition(
+        piece = piece,
+        x = this.x + x,
+        y = this.y + y,
+        rotation = rotation,
+      )
+    }
+
+    fun shiftedRight(): PieceWithPosition = shifted(x = 1, y = 0)
+
+    fun shiftedLeft(): PieceWithPosition = shifted(x = -1, y = 0)
+
+    fun shiftedDown(): PieceWithPosition = shifted(x = 0, y = 1)
+
+    fun rotatedClockwise(): PieceWithPosition = PieceWithPosition(
+      piece = piece,
+      x = x,
+      y = y,
+      rotation = (rotation + 1).mod(4),
+    )
+
+    fun rotatedCounterClockwise(): PieceWithPosition = PieceWithPosition(
+      piece = piece,
+      x = x,
+      y = y,
+      rotation = (rotation - 1).mod(4),
+    )
+
+    fun getRotationTests(rotationDirection: Int): List<Pair<Int, Int>> {
+      return piece.getRotationTests(currentRotation = rotation, rotationDirection = rotationDirection)
+    }
   }
 
   private val scheduler = SingleJobScheduler()
@@ -160,11 +193,11 @@ class Engine {
     override fun onLeftPressed() {
       if (_state.value != State.Running) return
       val currentPiece = _piece.value
-      val movedPiece = currentPiece.copy(x = currentPiece.x - 1)
+      val movedPiece = currentPiece.shiftedLeft()
       if (pieceCanGo(movedPiece)) {
         _piece.value = movedPiece
 
-        if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
+        if (!pieceCanGo(movedPiece.shiftedDown())) {
           scheduler.schedule(delay * 3) {
             gameLoop()
           }
@@ -175,11 +208,11 @@ class Engine {
     override fun onRightPressed() {
       if (_state.value != State.Running) return
       val currentPiece = _piece.value
-      val movedPiece = currentPiece.copy(x = currentPiece.x + 1)
+      val movedPiece = currentPiece.shiftedRight()
       if (pieceCanGo(movedPiece)) {
         _piece.value = movedPiece
 
-        if (!pieceCanGo(movedPiece.copy(y = movedPiece.y + 1))) {
+        if (!pieceCanGo(movedPiece.shiftedDown())) {
           scheduler.schedule(delay * 3) {
             gameLoop()
           }
@@ -190,27 +223,29 @@ class Engine {
     override fun onRotateClockwisePressed() {
       if (_state.value != State.Running) return
       val currentPiece = _piece.value
-      var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation + 1)
-      applyPieceIfPossible(rotatedPiece)
+      val rotationTests = currentPiece.getRotationTests(1)
+      val rotatedPiece = currentPiece.rotatedClockwise()
+      applyPieceIfPossible(rotatedPiece, rotationTests)
     }
 
     override fun onRotateCounterClockwisePressed() {
       if (_state.value != State.Running) return
       val currentPiece = _piece.value
-      var rotatedPiece = currentPiece.copy(rotation = currentPiece.rotation - 1)
-      applyPieceIfPossible(rotatedPiece)
+      val rotationTests = currentPiece.getRotationTests(-1)
+      val rotatedPiece = currentPiece.rotatedCounterClockwise()
+      applyPieceIfPossible(rotatedPiece, rotationTests)
     }
 
     override fun onDownPressed() {
       if (_state.value != State.Running) return
-      if (pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
+      if (pieceCanGo((_piece.value.shiftedDown()))) {
         movePieceDown()
       }
     }
 
     override fun onDropPressed() {
       if (_state.value != State.Running) return
-      while (pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
+      while (pieceCanGo((_piece.value.shiftedDown()))) {
         movePieceDown()
       }
       scheduler.schedule(Duration.ZERO) {
@@ -238,22 +273,17 @@ class Engine {
     }
   }
 
-  private fun applyPieceIfPossible(piece: PieceWithPosition) {
-    val yOffsets = listOf(0, -1, -2)
-    val xOffsets = listOf(0, 1, 2, -1, -2)
-    for (yOffset in yOffsets) {
-      for (xOffset in xOffsets) {
-        val candidatePiece = piece.copy(x = piece.x + xOffset, y = piece.y + yOffset)
-        if (pieceCanGo(candidatePiece)) {
-          this._piece.value = candidatePiece
-
-          if (!pieceCanGo(candidatePiece.copy(y = candidatePiece.y + 1))) {
-            scheduler.schedule(delay * 3) {
-              gameLoop()
-            }
+  private fun applyPieceIfPossible(piece: PieceWithPosition, rotationTests: List<Pair<Int, Int>>) {
+    for ((testOffsetX, testOffsetY) in rotationTests) {
+      val candidatePiece = piece.shifted(x = testOffsetX, y = -testOffsetY) // Invert Y offset because it is upwards in rotationTests
+      if (pieceCanGo(candidatePiece)) {
+        this._piece.value = candidatePiece
+        if (!pieceCanGo(candidatePiece.shiftedDown())) {
+          scheduler.schedule(delay * 3) {
+            gameLoop()
           }
-          return
         }
+        return
       }
     }
   }
@@ -279,14 +309,14 @@ class Engine {
   private fun gameLoop() {
     if (_state.value == State.GameOver) return
 
-    if (!pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
+    if (!pieceCanGo((_piece.value.shiftedDown()))) {
       handlePieceLanded()
       scheduler.schedule(delay) {
         gameLoop()
       }
     } else {
       movePieceDown()
-      val nextDelay = if (!pieceCanGo((_piece.value.copy(y = _piece.value.y + 1)))) {
+      val nextDelay = if (!pieceCanGo((_piece.value.shiftedDown()))) {
         delay * 3
       } else {
         delay
@@ -367,7 +397,7 @@ class Engine {
 
   private fun movePieceDown() {
     val currentPiece = _piece.value
-    _piece.value = currentPiece.copy(y = currentPiece.y + 1)
+    _piece.value = currentPiece.shiftedDown()
   }
 
   private fun handlePieceLanded() {
@@ -391,7 +421,6 @@ class Engine {
         if (piece.isFilled(x, y)) {
           val boardX = piece.x + x
           val boardY = piece.y + y
-          if (boardY < 0) continue
           val board = _board.value
           if (boardX < 0 || boardX >= board.width || boardY >= board.height || board[boardX, boardY] != Cell.Empty) {
             return false
@@ -403,9 +432,9 @@ class Engine {
   }
 
   private fun shadowPiece(piece: PieceWithPosition): PieceWithPosition {
-    var p = piece.copy()
+    var p = piece
     while (true) {
-      val candidatePiece = p.copy(y = p.y + 1)
+      val candidatePiece = p.shiftedDown()
       if (!pieceCanGo(candidatePiece)) {
         return p
       }

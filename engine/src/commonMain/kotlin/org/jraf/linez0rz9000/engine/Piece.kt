@@ -102,7 +102,7 @@ sealed class Piece(
   private val shapes: List<Shape> = shapes.map { it.toShape() }
 
   fun shape(rotation: Int): Shape {
-    return shapes[rotation.mod(shapes.size)]
+    return shapes[rotation]
   }
 
   private fun List<String>.toShape(): Shape {
@@ -172,6 +172,24 @@ sealed class Piece(
   object O : Piece(
     name = 'O',
     listOf(
+      listOf(
+        "    ",
+        " ## ",
+        " ## ",
+        "    ",
+      ),
+      listOf(
+        "    ",
+        " ## ",
+        " ## ",
+        "    ",
+      ),
+      listOf(
+        "    ",
+        " ## ",
+        " ## ",
+        "    ",
+      ),
       listOf(
         "    ",
         " ## ",
@@ -344,3 +362,172 @@ sealed class Piece(
   )
 }
 
+// See https://harddrop.com/wiki/SRS
+// /!\ Positive y is upwards here, unlike the rest of the codebase /!\
+private val JLSTZRotationTests = listOf(
+  // 0
+  listOf(
+    // 0 -> 1
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(-1, 1),
+      Pair(0, -2),
+      Pair(-1, -2),
+    ),
+    // 0 -> 3
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(1, 1),
+      Pair(0, -2),
+      Pair(1, -2),
+    ),
+  ),
+  // 1
+  listOf(
+    // 1 -> 2
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(1, -1),
+      Pair(0, 2),
+      Pair(1, 2),
+    ),
+    // 1 -> 0
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(1, -1),
+      Pair(0, 2),
+      Pair(1, 2),
+    ),
+  ),
+  // 2
+  listOf(
+    // 2 -> 3
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(1, 1),
+      Pair(0, -2),
+      Pair(1, -2),
+    ),
+    // 2 -> 1
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(-1, 1),
+      Pair(0, -2),
+      Pair(-1, -2),
+    ),
+  ),
+  // 3
+  listOf(
+    // 3 -> 0
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(-1, -1),
+      Pair(0, 2),
+      Pair(-1, 2),
+    ),
+    // 3 -> 2
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(-1, -1),
+      Pair(0, 2),
+      Pair(-1, 2),
+    ),
+  ),
+)
+
+private val IRotationTests = listOf(
+  // 0
+  listOf(
+    // 0 -> 1
+    listOf(
+      Pair(0, 0),
+      Pair(-2, 0),
+      Pair(1, 0),
+      Pair(-2, -1),
+      Pair(1, 2),
+    ),
+    // 0 -> 3
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(2, 0),
+      Pair(-1, 2),
+      Pair(2, -1),
+    ),
+  ),
+  // 1
+  listOf(
+    // 1 -> 2
+    listOf(
+      Pair(0, 0),
+      Pair(-1, 0),
+      Pair(2, 0),
+      Pair(-1, 2),
+      Pair(2, -1),
+    ),
+    // 1 -> 0
+    listOf(
+      Pair(0, 0),
+      Pair(2, 0),
+      Pair(-1, 0),
+      Pair(2, 1),
+      Pair(-1, -2),
+    ),
+  ),
+  // 2
+  listOf(
+    // 2 -> 3
+    listOf(
+      Pair(0, 0),
+      Pair(2, 0),
+      Pair(-1, 0),
+      Pair(2, 1),
+      Pair(-1, -2),
+    ),
+    // 2 -> 1
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(-2, 0),
+      Pair(1, -2),
+      Pair(-2, 1),
+    ),
+  ),
+  // 3
+  listOf(
+    // 3 -> 0
+    listOf(
+      Pair(0, 0),
+      Pair(1, 0),
+      Pair(-2, 0),
+      Pair(1, -2),
+      Pair(-2, 1),
+    ),
+    // 3 -> 2
+    listOf(
+      Pair(0, 0),
+      Pair(-2, 0),
+      Pair(1, 0),
+      Pair(-2, -1),
+      Pair(1, 2),
+    ),
+  ),
+)
+
+private val ORotationTests = listOf(Pair(0, 0))
+
+fun Piece.getRotationTests(currentRotation: Int, rotationDirection: Int): List<Pair<Int, Int>> {
+  return when (this) {
+    Piece.J, Piece.L, Piece.S, Piece.T, Piece.Z -> JLSTZRotationTests
+    Piece.I -> IRotationTests
+    Piece.O -> return ORotationTests
+  }[currentRotation][if (rotationDirection > 0) 0 else 1]
+}

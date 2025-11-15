@@ -77,6 +77,7 @@ fun App(engine: Engine) {
       Spacer(modifier = Modifier.weight(1F))
 
       Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
         color = Color.Red,
         text = "$lines",
         autoSize = TextAutoSize.StepBased(),
@@ -86,6 +87,7 @@ fun App(engine: Engine) {
       Spacer(modifier = Modifier.padding(top = 16.dp))
 
       Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
         color = Color.Red,
         text = "$maxLines",
         autoSize = TextAutoSize.StepBased(),
