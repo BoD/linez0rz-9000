@@ -70,6 +70,21 @@ class Storage(private val path: String) {
     dataStore.edit { it[KEY_PIECE_WITH_POSITION] = pieceWithPosition.toStorageString() }
   }
 
+  suspend fun getHeldPiece(): Engine.PieceWithPosition? =
+    dataStore.data.map { preferences ->
+      preferences[KEY_HELD_PIECE]?.toPieceWithPosition()
+    }.first()
+
+  suspend fun saveHeldPiece(heldPiece: Engine.PieceWithPosition?) {
+    dataStore.edit {
+      if (heldPiece == null) {
+        it.remove(KEY_HELD_PIECE)
+      } else {
+        it[KEY_HELD_PIECE] = heldPiece.toStorageString()
+      }
+    }
+  }
+
   suspend fun getLines(): Int? =
     dataStore.data.map { preferences ->
       preferences[KEY_LINES]
@@ -140,6 +155,7 @@ class Storage(private val path: String) {
     private val KEY_BOARD = stringPreferencesKey("board")
     private val KEY_NEXT_PIECES = stringPreferencesKey("nextPieces")
     private val KEY_PIECE_WITH_POSITION = stringPreferencesKey("pieceWithPosition")
+    private val KEY_HELD_PIECE = stringPreferencesKey("heldPiece")
     private val KEY_LINES = intPreferencesKey("lines")
     private val KEY_MAX_LINES = intPreferencesKey("maxLines")
   }

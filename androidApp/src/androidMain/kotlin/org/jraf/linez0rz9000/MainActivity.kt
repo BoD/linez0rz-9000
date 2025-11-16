@@ -126,6 +126,12 @@ class MainActivity : ComponentActivity() {
         true
       }
 
+      KeyEvent.KEYCODE_BUTTON_SELECT,
+        -> {
+        viewModel.engine.value?.actionHandler?.onHoldPressed()
+        true
+      }
+
       else -> {
         super.dispatchKeyEvent(event)
       }

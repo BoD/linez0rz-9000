@@ -111,6 +111,11 @@ fun main() {
             true
           }
 
+          Key.Tab -> {
+            engine.actionHandler.onHoldPressed()
+            true
+          }
+
           else -> {
             false
           }

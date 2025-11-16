@@ -64,6 +64,7 @@ fun App(engine: Engine) {
   val board: Board by engine.board.collectAsState()
   val state: Engine.State by engine.state.collectAsState()
   val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
+  val heldPiece: Engine.PieceWithPosition? by engine.heldPiece.collectAsState()
   val sessionLines: Int by engine.sessionLines.collectAsState()
   val gameLines: Int by engine.gameLines.collectAsState()
   val maxLines: Int by engine.maxLines.collectAsState()
@@ -85,6 +86,15 @@ fun App(engine: Engine) {
       )
 
       Spacer(modifier = Modifier.weight(1F))
+
+      if (heldPiece != null) {
+        Piece(
+          piece = heldPiece!!.piece,
+          state = state,
+        )
+
+        Spacer(modifier = Modifier.weight(1F))
+      }
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
@@ -135,7 +145,7 @@ private fun NextPieces(
     verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
     for (piece in nextPieces) {
-      NextPiece(
+      Piece(
         piece = piece,
         state = state,
       )
@@ -144,7 +154,7 @@ private fun NextPieces(
 }
 
 @Composable
-private fun NextPiece(
+private fun Piece(
   piece: Piece,
   state: Engine.State,
 ) {

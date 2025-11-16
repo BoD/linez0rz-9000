@@ -42,23 +42,30 @@ class Engine {
     board: Board,
     nextPieces: NextPieces,
     pieceWithPosition: PieceWithPosition?,
+    heldPiece: PieceWithPosition?,
     lines: Int,
     maxLines: Int,
     delay: Duration,
   ) {
     this.delay = delay
     _board = MutableStateFlow<Board>(board.toMutableBoard())
+
     _nextPieces = nextPieces
     this.nextPieces = _nextPieces.nextPieces
-    _piece = MutableStateFlow<PieceWithPosition>(pieceWithPosition ?: nextPiece())
-    this.piece = _piece
+
+    _piece = MutableStateFlow<PieceWithPosition>(pieceWithPosition ?: nextPieceWithPosition(_nextPieces.getNextPiece()))
+    piece = _piece
+
+    _heldPiece = MutableStateFlow<PieceWithPosition?>(heldPiece)
+    this.heldPiece = _heldPiece
+
     this.board = getBoardStateFlow()
 
     _sessionLines = MutableStateFlow(0)
-    this.sessionLines = _sessionLines
+    sessionLines = _sessionLines
 
     _gameLines = MutableStateFlow(lines)
-    this.gameLines = _gameLines
+    gameLines = _gameLines
 
     _maxLines = MutableStateFlow(maxLines)
     this.maxLines = _maxLines
@@ -68,6 +75,7 @@ class Engine {
     board: Board,
     nextPieces: List<Piece>,
     pieceWithPosition: PieceWithPosition?,
+    heldPiece: PieceWithPosition?,
     lines: Int,
     maxLines: Int,
     delay: Duration = .2.seconds,
@@ -75,6 +83,7 @@ class Engine {
     board = board,
     nextPieces = NextPieces(nextPieces),
     pieceWithPosition = pieceWithPosition,
+    heldPiece = heldPiece,
     lines = lines,
     maxLines = maxLines,
     delay = delay,
@@ -89,6 +98,7 @@ class Engine {
     board = MutableBoard(width, height),
     nextPieces = NextPieces(size = nextPiecesSize),
     pieceWithPosition = null,
+    heldPiece = null,
     lines = 0,
     maxLines = 0,
     delay = delay,
@@ -114,6 +124,9 @@ class Engine {
 
   private val _piece: MutableStateFlow<PieceWithPosition>
   val piece: StateFlow<PieceWithPosition>
+
+  private val _heldPiece: MutableStateFlow<PieceWithPosition?>
+  val heldPiece: StateFlow<PieceWithPosition?>
 
   val board: StateFlow<Board>
 
@@ -195,6 +208,8 @@ class Engine {
 
   private val scheduler = SingleJobScheduler()
 
+  private var hasHeld = false
+
   val actionHandler = object : ActionHandler {
     override fun onLeftPressed() {
       if (_state.value != State.Running) return
@@ -261,7 +276,19 @@ class Engine {
 
     override fun onHoldPressed() {
       if (_state.value != State.Running) return
-      // TODO
+      if (hasHeld) return
+      hasHeld = true
+      val currentHeldPiece = _heldPiece.value
+      val currentPiece = _piece.value
+      if (currentHeldPiece == null) {
+        // No held piece, so hold the current piece and get a new one
+        _heldPiece.value = currentPiece
+        _piece.value = nextPieceWithPosition(_nextPieces.getNextPiece())
+      } else {
+        // Swap current piece and held piece
+        _heldPiece.value = currentPiece
+        _piece.value = nextPieceWithPosition(currentHeldPiece.piece)
+      }
     }
 
     override fun onPausePressed() {
@@ -294,8 +321,7 @@ class Engine {
     }
   }
 
-  private fun nextPiece(): PieceWithPosition {
-    val piece = _nextPieces.getNextPiece()
+  private fun nextPieceWithPosition(piece: Piece): PieceWithPosition {
     return PieceWithPosition(
       piece = piece,
       x = _board.value.width / 2 - 2,
@@ -356,9 +382,11 @@ class Engine {
   fun restart() {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
-    _piece.value = nextPiece()
+    _piece.value = nextPieceWithPosition(_nextPieces.getNextPiece())
     _sessionLines.value = 0
     _gameLines.value = 0
+    _heldPiece.value = null
+    hasHeld = false
     start()
   }
 
@@ -411,10 +439,10 @@ class Engine {
   private fun handlePieceLanded() {
     // The piece is now debris
     _board.value = _board.value.withPiece(_piece.value, Cell.Debris)
-
+    hasHeld = false
     removeLines()
 
-    val nextPiece = nextPiece()
+    val nextPiece = nextPieceWithPosition(_nextPieces.getNextPiece())
     if (!pieceCanGo(nextPiece)) {
       // Game over!
       // TODO I think this is incorrect, see https://harddrop.com/wiki/Top_out
@@ -472,6 +500,7 @@ suspend fun Storage.saveEngineState(engine: Engine) {
   saveBoard(engine.board.value)
   saveNextPieces(engine.nextPieces.value)
   savePieceWithPosition(engine.piece.value)
+  saveHeldPiece(engine.heldPiece.value)
   saveLines(engine.gameLines.value)
   saveMaxLines(engine.maxLines.value)
 }
@@ -480,6 +509,7 @@ suspend fun Storage.loadEngine(): Engine {
   val savedBoard = getBoard()
   val savedNextPieces = getNextPieces()
   val savedPieceWithPosition = getPieceWithPosition()
+  val savedHeldPiece = getHeldPiece()
   val savedLines = getLines()
   val savedMaxLines = getMaxLines()
   return if (savedBoard != null && savedNextPieces != null && savedPieceWithPosition != null && savedLines != null && savedMaxLines != null) {
@@ -487,6 +517,7 @@ suspend fun Storage.loadEngine(): Engine {
       board = savedBoard,
       nextPieces = savedNextPieces,
       pieceWithPosition = savedPieceWithPosition,
+      heldPiece = savedHeldPiece,
       lines = savedLines,
       maxLines = savedMaxLines,
     )
