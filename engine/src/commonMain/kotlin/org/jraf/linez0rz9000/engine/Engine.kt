@@ -61,14 +61,14 @@ class Engine {
 
     this.board = getBoardStateFlow()
 
-    _sessionLines = MutableStateFlow(0)
-    sessionLines = _sessionLines
+    _sessionLineCount = MutableStateFlow(0)
+    sessionLineCount = _sessionLineCount
 
-    _gameLines = MutableStateFlow(lines)
-    gameLines = _gameLines
+    _gameLineCount = MutableStateFlow(lines)
+    gameLineCount = _gameLineCount
 
-    _maxLines = MutableStateFlow(maxLines)
-    this.maxLines = _maxLines
+    _gameLineCountMax = MutableStateFlow(maxLines)
+    this.gameLineCountMax = _gameLineCountMax
   }
 
   constructor(
@@ -130,14 +130,14 @@ class Engine {
 
   val board: StateFlow<Board>
 
-  private val _sessionLines: MutableStateFlow<Int>
-  val sessionLines: StateFlow<Int>
+  private val _sessionLineCount: MutableStateFlow<Int>
+  val sessionLineCount: StateFlow<Int>
 
-  private val _gameLines: MutableStateFlow<Int>
-  val gameLines: StateFlow<Int>
+  private val _gameLineCount: MutableStateFlow<Int>
+  val gameLineCount: StateFlow<Int>
 
-  private val _maxLines: MutableStateFlow<Int>
-  val maxLines: StateFlow<Int>
+  private val _gameLineCountMax: MutableStateFlow<Int>
+  val gameLineCountMax: StateFlow<Int>
 
   private fun getBoardStateFlow(): StateFlow<Board> = combine(
     _board,
@@ -325,7 +325,7 @@ class Engine {
     return PieceWithPosition(
       piece = piece,
       x = _board.value.width / 2 - 2,
-      y = 2 - piece.shape(0).bottomMost,
+      y = 1 - piece.shape(0).bottomMost,
       rotation = 0,
     )
   }
@@ -383,8 +383,8 @@ class Engine {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
     _piece.value = nextPieceWithPosition(_nextPieces.getNextPiece())
-    _sessionLines.value = 0
-    _gameLines.value = 0
+    _sessionLineCount.value = 0
+    _gameLineCount.value = 0
     _heldPiece.value = null
     hasHeld = false
     start()
@@ -409,10 +409,10 @@ class Engine {
       }
     }
     if (hasChanges) {
-      _sessionLines.value += linesRemoved
-      _gameLines.value += linesRemoved
-      if (_gameLines.value > _maxLines.value) {
-        _maxLines.value = _gameLines.value
+      _sessionLineCount.value += linesRemoved
+      _gameLineCount.value += linesRemoved
+      if (_gameLineCount.value > _gameLineCountMax.value) {
+        _gameLineCountMax.value = _gameLineCount.value
       }
       _board.value = board
     }
@@ -501,8 +501,8 @@ suspend fun Storage.saveEngineState(engine: Engine) {
   saveNextPieces(engine.nextPieces.value)
   savePieceWithPosition(engine.piece.value)
   saveHeldPiece(engine.heldPiece.value)
-  saveLines(engine.gameLines.value)
-  saveMaxLines(engine.maxLines.value)
+  saveGameLineCount(engine.gameLineCount.value)
+  saveGameLineCountMax(engine.gameLineCountMax.value)
 }
 
 suspend fun Storage.loadEngine(): Engine {
@@ -510,8 +510,8 @@ suspend fun Storage.loadEngine(): Engine {
   val savedNextPieces = getNextPieces()
   val savedPieceWithPosition = getPieceWithPosition()
   val savedHeldPiece = getHeldPiece()
-  val savedLines = getLines()
-  val savedMaxLines = getMaxLines()
+  val savedLines = getGameLineCount()
+  val savedMaxLines = getGameLineCountMax()
   return if (savedBoard != null && savedNextPieces != null && savedPieceWithPosition != null && savedLines != null && savedMaxLines != null) {
     Engine(
       board = savedBoard,

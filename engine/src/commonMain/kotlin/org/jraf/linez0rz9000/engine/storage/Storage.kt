@@ -25,139 +25,78 @@
 
 package org.jraf.linez0rz9000.engine.storage
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import okio.Path.Companion.toPath
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Cell
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.MutableBoard
 import org.jraf.linez0rz9000.engine.Piece
 
-class Storage(private val path: String) {
-  private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath { path.toPath() }
+interface Storage {
+  suspend fun getBoard(): Board?
+  suspend fun saveBoard(board: Board)
 
-  suspend fun getBoard(): Board? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_BOARD]?.toBoard()
-    }.first()
+  suspend fun getNextPieces(): List<Piece>?
+  suspend fun saveNextPieces(nextPieces: List<Piece>)
 
-  suspend fun saveBoard(board: Board) {
-    dataStore.edit { it[KEY_BOARD] = board.toStorageString() }
-  }
+  suspend fun getPieceWithPosition(): Engine.PieceWithPosition?
+  suspend fun savePieceWithPosition(pieceWithPosition: Engine.PieceWithPosition)
 
-  suspend fun getNextPieces(): List<Piece>? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_NEXT_PIECES]?.toNextPieces()
-    }.first()
+  suspend fun getHeldPiece(): Engine.PieceWithPosition?
+  suspend fun saveHeldPiece(heldPiece: Engine.PieceWithPosition?)
 
-  suspend fun saveNextPieces(nextPieces: List<Piece>) {
-    dataStore.edit { it[KEY_NEXT_PIECES] = nextPieces.toStorageString() }
-  }
+  suspend fun getGameLineCount(): Int?
+  suspend fun saveGameLineCount(gameLineCount: Int)
 
-  suspend fun getPieceWithPosition(): Engine.PieceWithPosition? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_PIECE_WITH_POSITION]?.toPieceWithPosition()
-    }.first()
+  suspend fun getGameLineCountMax(): Int?
+  suspend fun saveGameLineCountMax(gameLineCountMax: Int)
+}
 
-  suspend fun savePieceWithPosition(pieceWithPosition: Engine.PieceWithPosition) {
-    dataStore.edit { it[KEY_PIECE_WITH_POSITION] = pieceWithPosition.toStorageString() }
-  }
-
-  suspend fun getHeldPiece(): Engine.PieceWithPosition? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_HELD_PIECE]?.toPieceWithPosition()
-    }.first()
-
-  suspend fun saveHeldPiece(heldPiece: Engine.PieceWithPosition?) {
-    dataStore.edit {
-      if (heldPiece == null) {
-        it.remove(KEY_HELD_PIECE)
-      } else {
-        it[KEY_HELD_PIECE] = heldPiece.toStorageString()
+internal fun Board.toStorageString(): String {
+  return buildString {
+    for (y in 0..<height) {
+      for (x in 0..<width) {
+        append(if (this@toStorageString[x, y] == Cell.Debris) '#' else ' ')
       }
+      append('\n')
     }
-  }
-
-  suspend fun getLines(): Int? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_LINES]
-    }.first()
-
-  suspend fun saveLines(lines: Int) {
-    dataStore.edit { it[KEY_LINES] = lines }
-  }
-
-  suspend fun getMaxLines(): Int? =
-    dataStore.data.map { preferences ->
-      preferences[KEY_MAX_LINES]
-    }.first()
-
-  suspend fun saveMaxLines(maxLines: Int) {
-    dataStore.edit { it[KEY_MAX_LINES] = maxLines }
-  }
-
-  private fun Board.toStorageString(): String {
-    return buildString {
-      for (y in 0..<height) {
-        for (x in 0..<width) {
-          append(if (this@toStorageString[x, y] == Cell.Debris) '#' else ' ')
-        }
-        append('\n')
-      }
-    }
-  }
-
-  private fun String.toBoard(): Board {
-    val lines = this.lines().filter { it.isNotEmpty() }
-    val width = lines.first().length
-    val height = lines.size
-    return MutableBoard(width = width, height = height).also { board ->
-      for (y in 0..<height) {
-        for (x in 0..<width) {
-          board[x, y] = if (lines[y][x] == '#') Cell.Debris else Cell.Empty
-        }
-      }
-    }
-  }
-
-  private fun List<Piece>.toStorageString(): String {
-    return this.joinToString(separator = "") { it.name.toString() }
-  }
-
-  private fun String.toNextPieces(): List<Piece> {
-    return this.map { char ->
-      Piece.fromName(char)
-    }
-  }
-
-  private fun Engine.PieceWithPosition.toStorageString(): String {
-    return "${piece.name}:${x}:${y}:${rotation}"
-  }
-
-  private fun String.toPieceWithPosition(): Engine.PieceWithPosition {
-    val parts = this.split(":")
-    return Engine.PieceWithPosition(
-      piece = Piece.fromName(parts[0][0]),
-      x = parts[1].toInt(),
-      y = parts[2].toInt(),
-      rotation = parts[3].toInt(),
-    )
-  }
-
-  companion object {
-    private val KEY_BOARD = stringPreferencesKey("board")
-    private val KEY_NEXT_PIECES = stringPreferencesKey("nextPieces")
-    private val KEY_PIECE_WITH_POSITION = stringPreferencesKey("pieceWithPosition")
-    private val KEY_HELD_PIECE = stringPreferencesKey("heldPiece")
-    private val KEY_LINES = intPreferencesKey("lines")
-    private val KEY_MAX_LINES = intPreferencesKey("maxLines")
   }
 }
 
+internal fun String.toBoard(): Board {
+  val lines = this.lines().filter { it.isNotEmpty() }
+  val width = lines.first().length
+  val height = lines.size
+  return MutableBoard(width = width, height = height).also { board ->
+    for (y in 0..<height) {
+      for (x in 0..<width) {
+        board[x, y] = if (lines[y][x] == '#') Cell.Debris else Cell.Empty
+      }
+    }
+  }
+}
+
+internal fun List<Piece>.toStorageString(): String {
+  return this.joinToString(separator = "") { it.name.toString() }
+}
+
+internal fun String.toNextPieces(): List<Piece> {
+  return this.map { char ->
+    Piece.fromName(char)
+  }
+}
+
+internal fun Engine.PieceWithPosition.toStorageString(): String {
+  return "${piece.name}:${x}:${y}:${rotation}"
+}
+
+internal fun String.toPieceWithPosition(): Engine.PieceWithPosition {
+  val parts = this.split(":")
+  return Engine.PieceWithPosition(
+    piece = Piece.fromName(parts[0][0]),
+    x = parts[1].toInt(),
+    y = parts[2].toInt(),
+    rotation = parts[3].toInt(),
+  )
+}
+
+expect fun Storage(path: String?): Storage

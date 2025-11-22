@@ -57,7 +57,9 @@ fun main() {
       },
       title = "linez0rz 9000",
       onKeyEvent = { keyEvent ->
-        if (keyEvent.type != KeyEventType.KeyDown) return@Window false
+        if (keyEvent.type != KeyEventType.KeyDown) {
+          false
+        } else {
         when (keyEvent.key) {
           Key.DirectionLeft,
           Key.E,
@@ -111,7 +113,9 @@ fun main() {
             true
           }
 
-          Key.Tab -> {
+          Key.ShiftLeft,
+          Key.ShiftRight,
+            -> {
             engine.actionHandler.onHoldPressed()
             true
           }
@@ -119,6 +123,7 @@ fun main() {
           else -> {
             false
           }
+        }
         }
       },
     ) {

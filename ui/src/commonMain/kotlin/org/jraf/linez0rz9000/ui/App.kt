@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
@@ -65,9 +66,9 @@ fun App(engine: Engine) {
   val state: Engine.State by engine.state.collectAsState()
   val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
   val heldPiece: Engine.PieceWithPosition? by engine.heldPiece.collectAsState()
-  val sessionLines: Int by engine.sessionLines.collectAsState()
-  val gameLines: Int by engine.gameLines.collectAsState()
-  val maxLines: Int by engine.maxLines.collectAsState()
+  val sessionLineCount: Int by engine.sessionLineCount.collectAsState()
+  val gameLineCount: Int by engine.gameLineCount.collectAsState()
+  val gameLineCountMax: Int by engine.gameLineCountMax.collectAsState()
   Row {
     Box(
       modifier = Modifier
@@ -99,35 +100,62 @@ fun App(engine: Engine) {
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
         color = pieceColor(state),
-        text = "$sessionLines",
+        text = "Sess",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+        fontFamily = workbenchFontFamily,
+      )
+      Spacer(modifier = Modifier.size(6.dp))
+      Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
+        color = pieceColor(state),
+        text = "$sessionLineCount",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
         fontFamily = workbenchFontFamily,
       )
 
-      Spacer(modifier = Modifier.padding(top = 16.dp))
+      Spacer(modifier = Modifier.size(16.dp))
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
         color = pieceColor(state),
-        text = "$gameLines",
+        text = "Game",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+        fontFamily = workbenchFontFamily,
+      )
+      Spacer(modifier = Modifier.size(6.dp))
+      Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
+        color = pieceColor(state),
+        text = "$gameLineCount",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
         fontFamily = workbenchFontFamily,
       )
 
-      Spacer(modifier = Modifier.padding(top = 16.dp))
+      Spacer(modifier = Modifier.size(16.dp))
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
         color = pieceColor(state),
-        text = "$maxLines",
+        text = "High",
+        autoSize = TextAutoSize.StepBased(),
+        softWrap = false,
+        fontFamily = workbenchFontFamily,
+      )
+      Spacer(modifier = Modifier.size(6.dp))
+      Text(
+        modifier = Modifier.padding(horizontal = 8.dp),
+        color = pieceColor(state),
+        text = "$gameLineCountMax",
         autoSize = TextAutoSize.StepBased(),
         softWrap = false,
         fontFamily = workbenchFontFamily,
       )
 
-      Spacer(modifier = Modifier.padding(top = 16.dp))
+      Spacer(modifier = Modifier.size(16.dp))
     }
   }
   GameControlsPanel(engine = engine, state = state)

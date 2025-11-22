@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -23,6 +24,13 @@ val generateVersionKtTask = tasks.register("generateVersionKt") {
 
 kotlin {
   jvm()
+  @OptIn(ExperimentalWasmDsl::class)
+  wasmJs {
+    browser()
+    compilerOptions {
+      target.set("es2015")
+    }
+  }
 
   sourceSets {
     commonMain {
@@ -30,9 +38,19 @@ kotlin {
 
       dependencies {
         implementation(libs.kotlinx.coroutines.core)
+      }
+    }
 
+    jvmMain {
+      dependencies {
         implementation(libs.androidx.datastore)
         implementation(libs.androidx.datastore.preferences)
+      }
+    }
+
+    wasmJsMain {
+      dependencies {
+        implementation(libs.kotlinx.browser)
       }
     }
   }

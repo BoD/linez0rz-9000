@@ -33,4 +33,5 @@ include(
   ":ui",
   ":desktopApp",
   ":androidApp",
+  ":browserApp",
 )
