@@ -26,10 +26,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build with Gradle
-        run: |
-          ./gradlew --no-configuration-cache \
-          :androidApp:assembleDebug \
-          :desktopApp:package \
+        run: >
+          ./gradlew --no-configuration-cache
+          :androidApp:assembleDebug
+          :desktopApp:package
           :browserApp:wasmJsBrowserDistribution
 
       - name: Archive distribution
