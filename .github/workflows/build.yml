@@ -27,9 +27,9 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew --no-configuration-cache
-          :androidApp:assembleDebug
-          :desktopApp:package
+          ./gradlew --no-configuration-cache \
+          :androidApp:assembleDebug \
+          :desktopApp:package \
           :browserApp:wasmJsBrowserDistribution
 
       - name: Archive distribution
