@@ -25,23 +25,33 @@
 
 package org.jraf.linez0rz9000.browser
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import kotlinx.coroutines.delay
@@ -146,7 +156,29 @@ fun main() {
             }
           }
         },
-    )
+    ) {
+      FourRoundButtons(
+        modifier = Modifier
+          .padding(10.dp)
+          .align(Alignment.BottomStart),
+        buttonSize = 36.dp,
+        onLeftPressed = { engine.actionHandler.onLeftPressed() },
+        onRightPressed = { engine.actionHandler.onRightPressed() },
+        onUpPressed = { engine.actionHandler.onDropPressed() },
+        onDownPressed = { engine.actionHandler.onDownPressed() },
+      )
+
+      FourRoundButtons(
+        modifier = Modifier
+          .padding(10.dp)
+          .align(Alignment.BottomEnd),
+        buttonSize = 36.dp,
+        onLeftPressed = { engine.actionHandler.onHoldPressed() },
+        onRightPressed = { engine.actionHandler.onRotateClockwisePressed() },
+        onUpPressed = { engine.actionHandler.onPausePressed() },
+        onDownPressed = { engine.actionHandler.onRotateCounterClockwisePressed() },
+      )
+    }
 
     LaunchedEffect(state) {
       focusRequester.requestFocus()
@@ -166,4 +198,89 @@ fun main() {
 private fun focusCanvas() {
   // TODO Not sure why this is needed - looks like a Compose for Web bug?
   (document.body!!.shadowRoot!!.querySelectorAll("canvas").item(0) as HTMLElement).focus()
+}
+
+@Composable
+private fun FourRoundButtons(
+  modifier: Modifier = Modifier,
+  buttonSize: Dp,
+  onLeftPressed: () -> Unit,
+  onRightPressed: () -> Unit,
+  onUpPressed: () -> Unit,
+  onDownPressed: () -> Unit,
+) {
+  Box(
+    modifier = modifier,
+  ) {
+    // Left
+    RoundButton(
+      modifier = Modifier
+        .padding(bottom = buttonSize, top = buttonSize)
+        .size(buttonSize)
+        .pointerInput(Unit) {
+          detectTapGestures(
+            onPress = {
+              onLeftPressed()
+            },
+          )
+        },
+    )
+
+    // Down
+    RoundButton(
+      modifier = Modifier
+        .padding(start = buttonSize, top = buttonSize * 2)
+        .size(buttonSize)
+        .pointerInput(Unit) {
+          detectTapGestures(
+            onPress = {
+              onDownPressed()
+            },
+          )
+        },
+    )
+
+    // Up
+    RoundButton(
+      modifier = Modifier
+        .padding(start = buttonSize, bottom = buttonSize * 2)
+        .size(buttonSize)
+        .pointerInput(Unit) {
+          detectTapGestures(
+            onPress = {
+              onUpPressed()
+            },
+          )
+        },
+    )
+
+    // Right
+    RoundButton(
+      modifier = Modifier
+        .padding(start = buttonSize * 2, top = buttonSize)
+        .size(buttonSize)
+        .pointerInput(Unit) {
+          detectTapGestures(
+            onPress = {
+              onRightPressed()
+            },
+          )
+        },
+    )
+  }
+}
+
+@Composable
+private fun RoundButton(
+  modifier: Modifier = Modifier,
+) {
+  Box(
+    modifier = modifier.drawWithCache {
+      onDrawBehind {
+        drawCircle(
+          color = Color.Blue.copy(alpha = .2f),
+        )
+      }
+    },
+  )
 }
