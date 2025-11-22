@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Cell
 import org.jraf.linez0rz9000.engine.Engine
@@ -39,7 +41,9 @@ import kotlin.math.min
 
 @Composable
 fun Board(board: Board, state: Engine.State) {
-  Canvas(modifier = Modifier.fillMaxSize()) {
+  Layout(
+    content = {
+      Canvas(modifier = Modifier.fillMaxSize()) {
 //        // Debug: draw an outline rectangle of the whole canvas
 //        drawRect(
 //          color = Color.Red,
@@ -47,45 +51,73 @@ fun Board(board: Board, state: Engine.State) {
 //          style = Stroke(width = 1F),
 //        )
 
-    val canvasWidth = size.width
-    val canvasHeight = size.height
+        val boardWidth = board.width
+        val boardHeight = board.height
+        // Remove 1 to account for the top/left offsets
+        val cellSize = (size.width.toInt() - 1) / boardWidth
+        // First row is hidden and row 1 is half shown
+        for (y in 1..<boardHeight) {
+          for (x in 0..<boardWidth) {
+            val cell = board[x, y]
+            drawRect(
+              topLeft = Offset(
+                // Add 1 to account for the top/left offsets
+                x = (1 + cellSize * x).toFloat(),
+                y = (1 + if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
+              ),
+              size = Size(
+                width = (cellSize - 1).toFloat(),
+                height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
+              ),
+              color = when (cell) {
+                Cell.Empty -> emptyColor(state)
+
+                Cell.Piece -> pieceColor(state)
+
+                Cell.ShadowPiece -> shadowColor(state)
+
+                Cell.Debris -> when (state) {
+                  Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
+                  Engine.State.Running -> Color.Green
+                }
+              },
+            )
+          }
+        }
+      }
+    },
+  ) { measurables, constraints ->
     val boardWidth = board.width
     val boardHeight = board.height
-    val cellWidth = (canvasWidth.toInt() - 2) / boardWidth
-    val cellHeight = ((canvasHeight - 2) / (boardHeight - 1.5F)).toInt()
-    val cellSize = min(cellWidth, cellHeight)
-    val boardPixelWidth = boardWidth * cellSize
-    val boardPixelHeight = ((boardHeight - 1.5F) * cellSize).toInt()
-    val offsetX = ((canvasWidth - boardPixelWidth) / 2).toInt().coerceAtLeast(1)
-    val offsetY = ((canvasHeight - boardPixelHeight) / 2).toInt().coerceAtLeast(1)
-    // Hide first row
-    // Also, row 1 is half shown
-    for (y in 1..<boardHeight) {
-      for (x in 0..<boardWidth) {
-        val cell = board[x, y]
-        drawRect(
-          topLeft = Offset(
-            x = (offsetX + cellSize * x).toFloat(),
-            y = offsetY + (if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
-          ),
-          size = Size(
-            width = (cellSize - 1).toFloat(),
-            height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
-          ),
-          color = when (cell) {
-            Cell.Empty -> emptyColor(state)
+    // First row is hidden and row 1 is half shown
+    val aspectRatio = boardWidth.toFloat() / (boardHeight.toFloat() - 1.5F)
+    val constraintMaxHeight = constraints.maxHeight
+    val constraintMaxWidth = constraints.maxWidth
+    val maxWidthBasedOnHeight = (constraintMaxHeight * aspectRatio).toInt()
+    val maxHeightBasedOnWidth = (constraintMaxWidth / aspectRatio).toInt()
 
-            Cell.Piece -> pieceColor(state)
+    val maxWidth: Int
+    val maxHeight: Int
+    if (maxWidthBasedOnHeight <= constraintMaxWidth) {
+      // Use height as constraint
+      maxWidth = maxWidthBasedOnHeight
+      maxHeight = constraintMaxHeight
+    } else {
+      // Use width as constraint
+      maxWidth = constraintMaxWidth
+      maxHeight = maxHeightBasedOnWidth
+    }
+    val cellMaxWidth = (maxWidth - 2) / boardWidth
+    val cellMaxHeight = ((maxHeight - 2) / (boardHeight - 1.5F)).toInt()
+    val cellSize = min(cellMaxWidth, cellMaxHeight)
 
-            Cell.ShadowPiece -> shadowColor(state)
+    // We add 1 pixel for the top/left offsets
+    val boardPixelWidth = boardWidth * cellSize + 1
+    val boardPixelHeight = ((boardHeight - 1.5F) * cellSize).toInt() + 1
 
-            Cell.Debris -> when (state) {
-              Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
-              Engine.State.Running -> Color.Green
-            }
-          },
-        )
-      }
+    val placeable = measurables.first().measure(Constraints.fixed(boardPixelWidth, boardPixelHeight))
+    layout(boardPixelWidth, boardPixelHeight) {
+      placeable.place(0, 0)
     }
   }
 }

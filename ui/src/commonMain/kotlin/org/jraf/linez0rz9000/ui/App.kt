@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -69,33 +70,24 @@ fun App(engine: Engine) {
   val sessionLineCount: Int by engine.sessionLineCount.collectAsState()
   val gameLineCount: Int by engine.gameLineCount.collectAsState()
   val gameLineCountMax: Int by engine.gameLineCountMax.collectAsState()
-  Row {
+  Row(
+    modifier = Modifier.fillMaxSize(),
+    horizontalArrangement = Arrangement.Center,
+  ) {
     Box(
-      modifier = Modifier
-        .weight(1F),
+      modifier = Modifier.fillMaxHeight().weight(1f, fill = false),
+      contentAlignment = Alignment.Center,
     ) {
       Board(board = board, state = state)
     }
+
+    Spacer(modifier = Modifier.size(8.dp))
 
     Column(
       modifier = Modifier.width(64.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      NextPieces(
-        nextPieces = nextPieces,
-        state = state,
-      )
-
-      Spacer(modifier = Modifier.weight(1F))
-
-      if (heldPiece != null) {
-        Piece(
-          piece = heldPiece!!.piece,
-          state = state,
-        )
-
-        Spacer(modifier = Modifier.weight(1F))
-      }
+      Spacer(modifier = Modifier.size(8.dp))
 
       Text(
         modifier = Modifier.padding(horizontal = 8.dp),
@@ -155,7 +147,23 @@ fun App(engine: Engine) {
         fontFamily = workbenchFontFamily,
       )
 
-      Spacer(modifier = Modifier.size(16.dp))
+      Spacer(modifier = Modifier.weight(1F))
+
+      if (heldPiece != null) {
+        Piece(
+          piece = heldPiece!!.piece,
+          state = state,
+        )
+
+        Spacer(modifier = Modifier.weight(1F))
+      }
+
+      NextPieces(
+        nextPieces = nextPieces,
+        state = state,
+      )
+
+      Spacer(modifier = Modifier.size(8.dp))
     }
   }
   GameControlsPanel(engine = engine, state = state)
@@ -167,12 +175,10 @@ private fun NextPieces(
   state: Engine.State,
 ) {
   Column(
-    modifier = Modifier
-      .padding(top = 24.dp, bottom = 24.dp)
-      .width(64.dp),
+    modifier = Modifier.width(64.dp),
     verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
-    for (piece in nextPieces) {
+    for (piece in nextPieces.reversed()) {
       Piece(
         piece = piece,
         state = state,
