@@ -27,6 +27,7 @@ package org.jraf.linez0rz9000.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,18 +42,27 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import linez0rz_9000.ui.generated.resources.Res
 import linez0rz_9000.ui.generated.resources.Workbench
 import org.jetbrains.compose.resources.Font
@@ -60,6 +70,7 @@ import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.Piece
 import kotlin.math.min
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun App(engine: Engine) {
@@ -72,10 +83,31 @@ fun App(engine: Engine) {
   val sessionLineCount: Int by engine.sessionLineCount.collectAsState()
   val gameLineCount: Int by engine.gameLineCount.collectAsState()
   val gameLineCountMax: Int by engine.gameLineCountMax.collectAsState()
+
+  val scope = rememberCoroutineScope()
+  var buttonsVisible by remember { mutableStateOf(true) }
+  var hideButtonsJob by remember { mutableStateOf<Job?>(null) }
+
+  val showButtons = {
+    buttonsVisible = true
+    hideButtonsJob?.cancel()
+    hideButtonsJob = scope.launch {
+      delay(5.seconds)
+      buttonsVisible = false
+    }
+  }
+
   Box(
     Modifier
       .fillMaxSize()
-      .background(Color.DarkGray),
+      .background(Color.DarkGray)
+      .pointerInput(Unit) {
+        detectTapGestures(
+          onPress = {
+            showButtons()
+          },
+        )
+      },
   ) {
     Row(
       modifier = Modifier
@@ -181,28 +213,34 @@ fun App(engine: Engine) {
       }
     }
 
-    FourRoundButtons(
-      modifier = Modifier
-        .padding(start = 16.dp, bottom = 40.dp)
-        .align(Alignment.BottomStart),
-      buttonSize = 36.dp,
-      onLeftPressed = { engine.actionHandler.onLeftPressed() },
-      onRightPressed = { engine.actionHandler.onRightPressed() },
-      onUpPressed = { engine.actionHandler.onDropPressed() },
-      onDownPressed = { engine.actionHandler.onDownPressed() },
-    )
+    if (buttonsVisible) {
+      FourRoundButtons(
+        modifier = Modifier
+          .padding(start = 16.dp, bottom = 40.dp)
+          .align(Alignment.BottomStart),
+        buttonSize = 36.dp,
+        onLeftPressed = { showButtons(); engine.actionHandler.onLeftPressed() },
+        onRightPressed = { showButtons(); engine.actionHandler.onRightPressed() },
+        onUpPressed = { showButtons(); engine.actionHandler.onDropPressed() },
+        onDownPressed = { showButtons(); engine.actionHandler.onDownPressed() },
+      )
 
-    FourRoundButtons(
-      modifier = Modifier
-        .padding(end = 16.dp, bottom = 40.dp)
-        .align(Alignment.BottomEnd),
-      buttonSize = 36.dp,
-      onLeftPressed = { engine.actionHandler.onHoldPressed() },
-      onRightPressed = { engine.actionHandler.onRotateClockwisePressed() },
-      onUpPressed = { engine.actionHandler.onPausePressed() },
-      onDownPressed = { engine.actionHandler.onRotateCounterClockwisePressed() },
-    )
+      FourRoundButtons(
+        modifier = Modifier
+          .padding(end = 16.dp, bottom = 40.dp)
+          .align(Alignment.BottomEnd),
+        buttonSize = 36.dp,
+        onLeftPressed = { showButtons(); engine.actionHandler.onHoldPressed() },
+        onRightPressed = { showButtons(); engine.actionHandler.onRotateClockwisePressed() },
+        onUpPressed = { showButtons(); engine.actionHandler.onPausePressed() },
+        onDownPressed = { showButtons(); engine.actionHandler.onRotateCounterClockwisePressed() },
+      )
+    }
 
+    LaunchedEffect(Unit) {
+      delay(5.seconds)
+      buttonsVisible = false
+    }
 
     GameControlsPanel(engine = engine, state = state)
   }

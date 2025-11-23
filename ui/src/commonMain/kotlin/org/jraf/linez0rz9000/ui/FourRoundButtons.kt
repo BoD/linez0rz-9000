@@ -52,56 +52,32 @@ fun FourRoundButtons(
     RoundButton(
       modifier = Modifier
         .padding(bottom = buttonSize, top = buttonSize)
-        .size(buttonSize)
-        .pointerInput(Unit) {
-          detectTapGestures(
-            onPress = {
-              onLeftPressed()
-            },
-          )
-        },
+        .size(buttonSize),
+      onPressed = onLeftPressed,
     )
 
     // Down
     RoundButton(
       modifier = Modifier
         .padding(start = buttonSize, top = buttonSize * 2)
-        .size(buttonSize)
-        .pointerInput(Unit) {
-          detectTapGestures(
-            onPress = {
-              onDownPressed()
-            },
-          )
-        },
+        .size(buttonSize),
+      onPressed = onDownPressed,
     )
 
     // Up
     RoundButton(
       modifier = Modifier
         .padding(start = buttonSize, bottom = buttonSize * 2)
-        .size(buttonSize)
-        .pointerInput(Unit) {
-          detectTapGestures(
-            onPress = {
-              onUpPressed()
-            },
-          )
-        },
+        .size(buttonSize),
+      onPressed = onUpPressed,
     )
 
     // Right
     RoundButton(
       modifier = Modifier
         .padding(start = buttonSize * 2, top = buttonSize)
-        .size(buttonSize)
-        .pointerInput(Unit) {
-          detectTapGestures(
-            onPress = {
-              onRightPressed()
-            },
-          )
-        },
+        .size(buttonSize),
+      onPressed = onRightPressed,
     )
   }
 }
@@ -111,14 +87,24 @@ private val buttonColor = Color.White.copy(alpha = .4f)
 @Composable
 private fun RoundButton(
   modifier: Modifier = Modifier,
-) {
+  onPressed: () -> Unit,
+
+  ) {
   Box(
-    modifier = modifier.drawWithCache {
-      onDrawBehind {
-        drawCircle(
-          color = buttonColor,
-        )
+    modifier = modifier
+      .drawWithCache {
+        onDrawBehind {
+          drawCircle(
+            color = buttonColor,
+          )
+        }
       }
-    },
+      .pointerInput(Unit) {
+        detectTapGestures(
+          onPress = {
+            onPressed()
+          },
+        )
+      },
   )
 }
