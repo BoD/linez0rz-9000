@@ -36,6 +36,8 @@ private val emptyGameOverColor = Color.DarkGray
 private val pieceRunningColor = Color.Red
 private val piecePausedGameOverColor = Color.LightGray
 
+private val debrisRunningColor = Color.Green
+
 private val shadowRunningColor = pieceRunningColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
 private val shadowPausedColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
 private val shadowGameOverColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyGameOverColor)
@@ -47,6 +49,11 @@ fun emptyColor(state: Engine.State): Color = when (state) {
 
 fun pieceColor(state: Engine.State): Color = when (state) {
   Engine.State.Running -> pieceRunningColor
+  Engine.State.Paused, Engine.State.GameOver -> piecePausedGameOverColor
+}
+
+fun debrisColor(state: Engine.State): Color = when (state) {
+  Engine.State.Running -> debrisRunningColor
   Engine.State.Paused, Engine.State.GameOver -> piecePausedGameOverColor
 }
 

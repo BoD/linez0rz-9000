@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import org.jraf.linez0rz9000.engine.Board
@@ -76,10 +75,7 @@ fun Board(board: Board, state: Engine.State) {
 
                 Cell.ShadowPiece -> shadowColor(state)
 
-                Cell.Debris -> when (state) {
-                  Engine.State.GameOver, Engine.State.Paused -> Color.LightGray
-                  Engine.State.Running -> Color.Green
-                }
+                Cell.Debris -> debrisColor(state)
               },
             )
           }

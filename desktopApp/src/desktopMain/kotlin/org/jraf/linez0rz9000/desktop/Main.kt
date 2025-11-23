@@ -60,70 +60,70 @@ fun main() {
         if (keyEvent.type != KeyEventType.KeyDown) {
           false
         } else {
-        when (keyEvent.key) {
-          Key.DirectionLeft,
-          Key.E,
-            -> {
-            engine.actionHandler.onLeftPressed()
-            true
-          }
+          when (keyEvent.key) {
+            Key.DirectionLeft,
+            Key.E,
+              -> {
+              engine.actionHandler.onLeftPressed()
+              true
+            }
 
-          Key.DirectionRight,
-          Key.F,
-            -> {
-            engine.actionHandler.onRightPressed()
-            true
-          }
+            Key.DirectionRight,
+            Key.F,
+              -> {
+              engine.actionHandler.onRightPressed()
+              true
+            }
 
-          Key.Spacebar,
-          Key.C,
-            -> {
-            engine.actionHandler.onDropPressed()
-            true
-          }
+            Key.Spacebar,
+            Key.C,
+              -> {
+              engine.actionHandler.onDropPressed()
+              true
+            }
 
-          Key.DirectionDown,
-          Key.D,
-            -> {
-            engine.actionHandler.onDownPressed()
-            true
-          }
+            Key.DirectionDown,
+            Key.D,
+              -> {
+              engine.actionHandler.onDownPressed()
+              true
+            }
 
-          Key.DirectionUp,
-          Key.X,
-          Key.G,
-          Key.H,
-            -> {
-            engine.actionHandler.onRotateClockwisePressed()
-            true
-          }
+            Key.DirectionUp,
+            Key.X,
+            Key.G,
+            Key.H,
+              -> {
+              engine.actionHandler.onRotateClockwisePressed()
+              true
+            }
 
-          Key.Z,
-          Key.J,
-          Key.I,
-            -> {
-            engine.actionHandler.onRotateCounterClockwisePressed()
-            true
-          }
+            Key.Z,
+            Key.J,
+            Key.I,
+              -> {
+              engine.actionHandler.onRotateCounterClockwisePressed()
+              true
+            }
 
-          Key.P,
-          Key.O,
-            -> {
-            engine.actionHandler.onPausePressed()
-            true
-          }
+            Key.P,
+            Key.O,
+              -> {
+              engine.actionHandler.onPausePressed()
+              true
+            }
 
-          Key.ShiftLeft,
-          Key.ShiftRight,
-            -> {
-            engine.actionHandler.onHoldPressed()
-            true
-          }
+            Key.ShiftLeft,
+            Key.ShiftRight,
+              -> {
+              engine.actionHandler.onHoldPressed()
+              true
+            }
 
-          else -> {
-            false
+            else -> {
+              false
+            }
           }
-        }
         }
       },
     ) {
@@ -141,4 +141,3 @@ fun main() {
     }
   }
 }
-

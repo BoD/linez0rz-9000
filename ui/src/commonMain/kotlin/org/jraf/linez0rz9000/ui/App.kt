@@ -26,6 +26,7 @@
 package org.jraf.linez0rz9000.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -70,103 +72,140 @@ fun App(engine: Engine) {
   val sessionLineCount: Int by engine.sessionLineCount.collectAsState()
   val gameLineCount: Int by engine.gameLineCount.collectAsState()
   val gameLineCountMax: Int by engine.gameLineCountMax.collectAsState()
-  Row(
-    modifier = Modifier.fillMaxSize(),
-    horizontalArrangement = Arrangement.Center,
+  Box(
+    Modifier
+      .fillMaxSize()
+      .background(Color.DarkGray),
   ) {
-    Box(
-      modifier = Modifier.fillMaxHeight().weight(1f, fill = false),
-      contentAlignment = Alignment.Center,
+    Row(
+      modifier = Modifier
+        .fillMaxSize(),
+      horizontalArrangement = Arrangement.Center,
     ) {
-      Board(board = board, state = state)
-    }
+      Box(
+        modifier = Modifier.fillMaxHeight().weight(1f, fill = false),
+        contentAlignment = Alignment.Center,
+      ) {
+        Board(board = board, state = state)
+      }
 
-    Spacer(modifier = Modifier.size(8.dp))
+      Column(
+        modifier = Modifier.width(64.dp).padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Spacer(modifier = Modifier.size(8.dp))
 
-    Column(
-      modifier = Modifier.width(64.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-      Spacer(modifier = Modifier.size(8.dp))
+        // Game
+        Text(
+          color = pieceColor(state),
+          text = "Game",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
+        Spacer(modifier = Modifier.size(6.dp))
+        Text(
+          color = debrisColor(state),
+          text = "$gameLineCount",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
+        Spacer(modifier = Modifier.size(2.dp))
+        val linesTo9000 = 9000 - gameLineCount
+        Text(
+          color = debrisColor(state),
+          text = "${if (linesTo9000 > 0) linesTo9000 else "0!!!"}",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
 
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "Sess",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
-      Spacer(modifier = Modifier.size(6.dp))
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "$sessionLineCount",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
+        Spacer(modifier = Modifier.size(16.dp))
 
-      Spacer(modifier = Modifier.size(16.dp))
+        // Session
+        Text(
+          color = pieceColor(state),
+          text = "Sess",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
+        Spacer(modifier = Modifier.size(6.dp))
+        Text(
+          color = debrisColor(state),
+          text = "$sessionLineCount",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
 
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "Game",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
-      Spacer(modifier = Modifier.size(6.dp))
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "$gameLineCount",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
+        Spacer(modifier = Modifier.size(16.dp))
 
-      Spacer(modifier = Modifier.size(16.dp))
-
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "High",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
-      Spacer(modifier = Modifier.size(6.dp))
-      Text(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        color = pieceColor(state),
-        text = "$gameLineCountMax",
-        autoSize = TextAutoSize.StepBased(),
-        softWrap = false,
-        fontFamily = workbenchFontFamily,
-      )
-
-      Spacer(modifier = Modifier.weight(1F))
-
-      if (heldPiece != null) {
-        Piece(
-          piece = heldPiece!!.piece,
-          state = state,
+        // Best
+        Text(
+          color = pieceColor(state),
+          text = "Best",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
+        )
+        Spacer(modifier = Modifier.size(6.dp))
+        Text(
+          color = debrisColor(state),
+          text = "$gameLineCountMax",
+          autoSize = TextAutoSize.StepBased(),
+          softWrap = false,
+          fontFamily = workbenchFontFamily,
         )
 
         Spacer(modifier = Modifier.weight(1F))
+
+        // Held piece
+        if (heldPiece != null) {
+          Piece(
+            piece = heldPiece!!.piece,
+            color = debrisColor(state),
+          )
+
+          Spacer(modifier = Modifier.weight(1F))
+        }
+
+        // Next pieces
+        NextPieces(
+          nextPieces = nextPieces,
+          state = state,
+        )
+
+        Spacer(modifier = Modifier.size(8.dp))
       }
-
-      NextPieces(
-        nextPieces = nextPieces,
-        state = state,
-      )
-
-      Spacer(modifier = Modifier.size(8.dp))
     }
+
+    FourRoundButtons(
+      modifier = Modifier
+        .padding(start = 16.dp, bottom = 40.dp)
+        .align(Alignment.BottomStart),
+      buttonSize = 36.dp,
+      onLeftPressed = { engine.actionHandler.onLeftPressed() },
+      onRightPressed = { engine.actionHandler.onRightPressed() },
+      onUpPressed = { engine.actionHandler.onDropPressed() },
+      onDownPressed = { engine.actionHandler.onDownPressed() },
+    )
+
+    FourRoundButtons(
+      modifier = Modifier
+        .padding(end = 16.dp, bottom = 40.dp)
+        .align(Alignment.BottomEnd),
+      buttonSize = 36.dp,
+      onLeftPressed = { engine.actionHandler.onHoldPressed() },
+      onRightPressed = { engine.actionHandler.onRotateClockwisePressed() },
+      onUpPressed = { engine.actionHandler.onPausePressed() },
+      onDownPressed = { engine.actionHandler.onRotateCounterClockwisePressed() },
+    )
+
+
+    GameControlsPanel(engine = engine, state = state)
   }
-  GameControlsPanel(engine = engine, state = state)
 }
 
 @Composable
@@ -175,13 +214,12 @@ private fun NextPieces(
   state: Engine.State,
 ) {
   Column(
-    modifier = Modifier.width(64.dp),
-    verticalArrangement = Arrangement.spacedBy(24.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
     for (piece in nextPieces.reversed()) {
       Piece(
         piece = piece,
-        state = state,
+        color = pieceColor(state),
       )
     }
   }
@@ -190,7 +228,7 @@ private fun NextPieces(
 @Composable
 private fun Piece(
   piece: Piece,
-  state: Engine.State,
+  color: Color,
 ) {
   Layout(
     content = {
@@ -218,7 +256,7 @@ private fun Piece(
                   width = (cellSize - 1).toFloat(),
                   height = (cellSize - 1).toFloat(),
                 ),
-                color = pieceColor(state),
+                color = color,
               )
             }
           }
