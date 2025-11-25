@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import org.jraf.linez0rz9000.engine.storage.Storage
+import org.jraf.linez0rz9000.engine.util.mapState
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -66,6 +67,7 @@ class Engine {
 
     _gameLineCount = MutableStateFlow(lines)
     gameLineCount = _gameLineCount
+    gameLineCountTo9000 = _gameLineCount.mapState { (9000 - it).coerceAtLeast(0) }
 
     _gameLineCountMax = MutableStateFlow(maxLines)
     this.gameLineCountMax = _gameLineCountMax
@@ -135,6 +137,7 @@ class Engine {
 
   private val _gameLineCount: MutableStateFlow<Int>
   val gameLineCount: StateFlow<Int>
+  val gameLineCountTo9000: StateFlow<Int>
 
   private val _gameLineCountMax: MutableStateFlow<Int>
   val gameLineCountMax: StateFlow<Int>

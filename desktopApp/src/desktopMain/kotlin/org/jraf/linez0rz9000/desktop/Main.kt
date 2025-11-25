@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -48,6 +50,7 @@ fun main() {
   val engine = runBlocking { storage.loadEngine() }
   engine.start()
   application {
+    val gameLineCountTo9000: Int by engine.gameLineCountTo9000.collectAsState()
     Window(
       onCloseRequest = {
         runBlocking {
@@ -55,7 +58,7 @@ fun main() {
         }
         exitApplication()
       },
-      title = "linez0rz 9000",
+      title = "Linez0rz $gameLineCountTo9000",
       onKeyEvent = { keyEvent ->
         if (keyEvent.type != KeyEventType.KeyDown) {
           false
@@ -101,6 +104,7 @@ fun main() {
             Key.Z,
             Key.J,
             Key.I,
+            Key.ShiftRight,
               -> {
               engine.actionHandler.onRotateCounterClockwisePressed()
               true
@@ -114,7 +118,6 @@ fun main() {
             }
 
             Key.ShiftLeft,
-            Key.ShiftRight,
               -> {
               engine.actionHandler.onHoldPressed()
               true

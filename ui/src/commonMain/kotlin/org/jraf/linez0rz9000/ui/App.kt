@@ -25,7 +25,6 @@
 
 package org.jraf.linez0rz9000.ui
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -51,14 +50,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -69,7 +64,6 @@ import org.jetbrains.compose.resources.Font
 import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.Piece
-import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -82,6 +76,7 @@ fun App(engine: Engine) {
   val heldPiece: Engine.PieceWithPosition? by engine.heldPiece.collectAsState()
   val sessionLineCount: Int by engine.sessionLineCount.collectAsState()
   val gameLineCount: Int by engine.gameLineCount.collectAsState()
+  val gameLineCountTo9000: Int by engine.gameLineCountTo9000.collectAsState()
   val gameLineCountMax: Int by engine.gameLineCountMax.collectAsState()
 
   val scope = rememberCoroutineScope()
@@ -144,10 +139,9 @@ fun App(engine: Engine) {
           fontFamily = workbenchFontFamily,
         )
         Spacer(modifier = Modifier.size(2.dp))
-        val linesTo9000 = 9000 - gameLineCount
         Text(
           color = debrisColor(state),
-          text = "${if (linesTo9000 > 0) linesTo9000 else "0!!!"}",
+          text = "${if (gameLineCountTo9000 > 0) gameLineCountTo9000 else "0!!!"}",
           autoSize = TextAutoSize.StepBased(),
           softWrap = false,
           fontFamily = workbenchFontFamily,
@@ -195,7 +189,7 @@ fun App(engine: Engine) {
 
         // Held piece
         if (heldPiece != null) {
-          Piece(
+          org.jraf.linez0rz9000.ui.Piece(
             piece = heldPiece!!.piece,
             color = debrisColor(state),
           )
@@ -216,7 +210,7 @@ fun App(engine: Engine) {
     if (buttonsVisible) {
       FourRoundButtons(
         modifier = Modifier
-          .padding(start = 16.dp, bottom = 40.dp)
+          .padding(start = 16.dp, bottom = 160.dp)
           .align(Alignment.BottomStart),
         buttonSize = 36.dp,
         onLeftPressed = { showButtons(); engine.actionHandler.onLeftPressed() },
@@ -227,7 +221,7 @@ fun App(engine: Engine) {
 
       FourRoundButtons(
         modifier = Modifier
-          .padding(end = 16.dp, bottom = 40.dp)
+          .padding(end = 16.dp, bottom = 160.dp)
           .align(Alignment.BottomEnd),
         buttonSize = 36.dp,
         onLeftPressed = { showButtons(); engine.actionHandler.onHoldPressed() },
@@ -243,71 +237,6 @@ fun App(engine: Engine) {
     }
 
     GameControlsPanel(engine = engine, state = state)
-  }
-}
-
-@Composable
-private fun NextPieces(
-  nextPieces: List<Piece>,
-  state: Engine.State,
-) {
-  Column(
-    verticalArrangement = Arrangement.spacedBy(8.dp),
-  ) {
-    for (piece in nextPieces.reversed()) {
-      Piece(
-        piece = piece,
-        color = pieceColor(state),
-      )
-    }
-  }
-}
-
-@Composable
-private fun Piece(
-  piece: Piece,
-  color: Color,
-) {
-  Layout(
-    content = {
-      Canvas(
-        modifier = Modifier.fillMaxSize(),
-      ) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-        val cellWidth = (canvasWidth.toInt() - 2) / 4
-        val cellHeight = (canvasHeight.toInt() - 2) / 2
-        val cellSize = min(cellWidth, cellHeight)
-        val shape = piece.shape(0)
-        val leftOffset = (4 - shape.width) * cellSize / 2 - shape.leftMost * cellSize
-        val topOffset = (2 - shape.height) * cellSize / 2 - shape.topMost * cellSize
-
-        for (x in 0..<4) {
-          for (y in 0..<4) {
-            if (shape.isFilled(x, y)) {
-              drawRect(
-                topLeft = Offset(
-                  x = (1 + cellSize * x + leftOffset).toFloat(),
-                  y = (1 + cellSize * y + topOffset).toFloat(),
-                ),
-                size = Size(
-                  width = (cellSize - 1).toFloat(),
-                  height = (cellSize - 1).toFloat(),
-                ),
-                color = color,
-              )
-            }
-          }
-        }
-      }
-    },
-  ) { measurables, constraints ->
-    val width = constraints.maxWidth
-    val height = width / 2
-    val placeable = measurables.first().measure(Constraints.fixed(width, height))
-    layout(width, height) {
-      placeable.place(0, 0)
-    }
   }
 }
 

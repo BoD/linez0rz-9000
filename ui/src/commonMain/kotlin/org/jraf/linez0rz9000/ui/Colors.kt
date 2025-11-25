@@ -36,20 +36,40 @@ private val emptyGameOverColor = Color.DarkGray
 private val pieceRunningColor = Color.Red
 private val piecePausedGameOverColor = Color.LightGray
 
+private const val alphaDecrement = 0.25f
+private val pieceRunningColorAlpha1 = pieceRunningColor.copy(alpha = 1F - alphaDecrement)
+private val piecePausedGameOverColorAlpha1 = piecePausedGameOverColor.copy(alpha = 1F - alphaDecrement)
+private val pieceRunningColorAlpha2 = pieceRunningColor.copy(alpha = 1F - 2 * alphaDecrement)
+private val piecePausedGameOverColorAlpha2 = piecePausedGameOverColor.copy(alpha = 1F - 2 * alphaDecrement)
+private val pieceRunningColorAlpha3 = pieceRunningColor.copy(alpha = 1F - 3 * alphaDecrement)
+private val piecePausedGameOverColorAlpha3 = piecePausedGameOverColor.copy(alpha = 1F - 3 * alphaDecrement)
+
+
 private val debrisRunningColor = Color.Green
 
-private val shadowRunningColor = pieceRunningColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
-private val shadowPausedColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyRunningPausedColor)
-private val shadowGameOverColor = piecePausedGameOverColor.copy(alpha = .33F).compositeOver(emptyGameOverColor)
+private val shadowRunningColor = pieceRunningColor.copy(alpha = .25F).compositeOver(emptyRunningPausedColor)
+private val shadowPausedColor = piecePausedGameOverColor.copy(alpha = .25F).compositeOver(emptyRunningPausedColor)
+private val shadowGameOverColor = piecePausedGameOverColor.copy(alpha = .25F).compositeOver(emptyGameOverColor)
 
 fun emptyColor(state: Engine.State): Color = when (state) {
   Engine.State.Running, Engine.State.Paused -> emptyRunningPausedColor
   Engine.State.GameOver -> emptyGameOverColor
 }
 
-fun pieceColor(state: Engine.State): Color = when (state) {
-  Engine.State.Running -> pieceRunningColor
-  Engine.State.Paused, Engine.State.GameOver -> piecePausedGameOverColor
+fun pieceColor(state: Engine.State, index: Int = 0): Color = when (state) {
+  Engine.State.Running -> when (index) {
+    0 -> pieceRunningColor
+    1 -> pieceRunningColorAlpha1
+    2 -> pieceRunningColorAlpha2
+    else -> pieceRunningColorAlpha3
+  }
+
+  Engine.State.Paused, Engine.State.GameOver -> when (index) {
+    0 -> piecePausedGameOverColor
+    1 -> piecePausedGameOverColorAlpha1
+    2 -> piecePausedGameOverColorAlpha2
+    else -> piecePausedGameOverColorAlpha3
+  }
 }
 
 fun debrisColor(state: Engine.State): Color = when (state) {

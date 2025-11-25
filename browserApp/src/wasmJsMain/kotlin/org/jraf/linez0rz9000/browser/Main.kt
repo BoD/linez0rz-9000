@@ -64,6 +64,7 @@ fun main() {
       }
     }
     val engine = maybeEngine ?: return@ComposeViewport
+    val gameLineCountTo9000: Int by engine.gameLineCountTo9000.collectAsState()
 
     val state: Engine.State by engine.state.collectAsState()
 
@@ -121,6 +122,7 @@ fun main() {
               Key.Z,
               Key.J,
               Key.I,
+              Key.ShiftRight,
                 -> {
                 engine.actionHandler.onRotateCounterClockwisePressed()
                 true
@@ -134,7 +136,6 @@ fun main() {
               }
 
               Key.ShiftLeft,
-              Key.ShiftRight,
                 -> {
                 engine.actionHandler.onHoldPressed()
                 true
@@ -159,6 +160,10 @@ fun main() {
         delay(2.seconds)
         storage.saveEngineState(engine = engine)
       }
+    }
+
+    LaunchedEffect(gameLineCountTo9000) {
+      document.title = "Linez0rz $gameLineCountTo9000"
     }
   }
 }
