@@ -23,6 +23,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@file:OptIn(ExperimentalWasmJsInterop::class)
+
 package org.jraf.linez0rz9000.browser
 
 import androidx.compose.foundation.layout.Box
@@ -51,6 +53,8 @@ import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.gamepad.Gamepad
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
@@ -165,6 +169,53 @@ fun main() {
     LaunchedEffect(gameLineCountTo9000) {
       document.title = "Linez0rz $gameLineCountTo9000"
     }
+
+    LaunchedEffect(Unit) {
+      val pressedButtonIndexes = mutableSetOf<Int>()
+      while (true) {
+        // Polling at ~60Hz
+        delay(16.milliseconds)
+        val gamepad = getGamepads().get(0) ?: continue
+        val newPressedButtons = mutableSetOf<Int>()
+        gamepad.buttons.toArray().forEachIndexed { index, button ->
+          if (button.pressed) {
+            if (index !in pressedButtonIndexes) {
+              pressedButtonIndexes.add(index)
+              newPressedButtons.add(index)
+            }
+          } else {
+            pressedButtonIndexes.remove(index)
+          }
+        }
+        for (newPressedButtonIndexes in newPressedButtons) {
+          when (newPressedButtonIndexes) {
+            // A
+            0 -> engine.actionHandler.onRotateCounterClockwisePressed()
+
+            // B
+            1 -> engine.actionHandler.onRotateClockwisePressed()
+
+            // X, RB, RT
+            2, 5, 7 -> engine.actionHandler.onHoldPressed()
+
+            // Y
+            3 -> engine.actionHandler.onPausePressed()
+
+            // Up
+            12 -> engine.actionHandler.onDropPressed()
+
+            // Down
+            13 -> engine.actionHandler.onDownPressed()
+
+            // Left
+            14 -> engine.actionHandler.onLeftPressed()
+
+            // Right
+            15 -> engine.actionHandler.onRightPressed()
+          }
+        }
+      }
+    }
   }
 }
 
@@ -172,3 +223,10 @@ private fun focusCanvas() {
   // TODO Not sure why this is needed - looks like a Compose for Web bug?
   (document.body!!.shadowRoot!!.querySelectorAll("canvas").item(0) as HTMLElement).focus()
 }
+
+private fun getGamepads(): JsArray<Gamepad> = js("navigator.getGamepads()")
+
+private fun log(message: String): Unit = println(message)
+
+private fun log(message: String, vararg args: JsAny?): Unit =
+  js("console.log(message, args)")

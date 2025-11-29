@@ -187,23 +187,23 @@ fun App(engine: Engine) {
 
         Spacer(modifier = Modifier.weight(1F))
 
-        // Held piece
-        if (heldPiece != null) {
-          org.jraf.linez0rz9000.ui.Piece(
-            piece = heldPiece!!.piece,
-            color = debrisColor(state),
-          )
-
-          Spacer(modifier = Modifier.weight(1F))
-        }
-
         // Next pieces
         NextPieces(
           nextPieces = nextPieces,
           state = state,
         )
 
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.weight(1F))
+
+        // Held piece
+        if (heldPiece != null) {
+          Piece(
+            piece = heldPiece!!.piece,
+            color = debrisColor(state),
+          )
+
+          Spacer(modifier = Modifier.size(8.dp))
+        }
       }
     }
 
