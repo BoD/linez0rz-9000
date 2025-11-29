@@ -25,12 +25,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      #      - name: Build with Gradle
-      #        run: >
-      #          ./gradlew --no-configuration-cache
-      #          :browserApp:wasmJsBrowserDistribution
-      #          :androidApp:assembleDebug
-      #          :desktopApp:package
+      - name: Build with Gradle
+        run: >
+          ./gradlew --no-configuration-cache
+          :browserApp:wasmJsBrowserDistribution
+          :androidApp:assembleDebug
+          :desktopApp:package
 
       - name: Checkout website
         uses: actions/checkout@v6
@@ -41,10 +41,9 @@ jobs:
 
       - name: Copy distribution to website
         run: |
-          #          rm -rf website/linez0rz9000
-          #          mkdir -p website/linez0rz9000
-          #          cp -r browserApp/build/dist/wasmJs/productionExecutable/ website/linez0rz9000
-               date > website/linez0rz9000/build_time.txt
+          rm -rf website/linez0rz9000
+          mkdir -p website/linez0rz9000
+          cp -r browserApp/build/dist/wasmJs/productionExecutable/ website/linez0rz9000
 
       - name: Commit and push changes to website
         run: |
