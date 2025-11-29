@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.Piece
-import kotlin.math.min
 
 @Composable
 fun NextPieces(
@@ -70,12 +69,11 @@ fun Piece(
       ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
-        val cellWidth = (canvasWidth.toInt() - 2) / 4
-        val cellHeight = (canvasHeight.toInt() - 2) / 2
-        val cellSize = min(cellWidth, cellHeight)
+        val cellSize = (canvasWidth.toInt() - 1) / 4
         val shape = piece.shape(0)
-        val leftOffset = (4 - shape.width) * cellSize / 2 - shape.leftMost * cellSize
-        val topOffset = (2 - shape.height) * cellSize / 2 - shape.topMost * cellSize
+
+        val leftOffset = ((canvasWidth - shape.width * cellSize) / 2 - shape.leftMost * cellSize).toInt()
+        val topOffset = ((canvasHeight - shape.height * cellSize) / 2 - shape.topMost * cellSize).toInt()
 
         for (x in 0..<4) {
           for (y in 0..<4) {
@@ -98,7 +96,9 @@ fun Piece(
     },
   ) { measurables, constraints ->
     val width = constraints.maxWidth
-    val height = width / 2
+    // All pieces are 2 cells tall, except I which is 1 cell high - so we should divide by 4 for it.
+    // But it visually looks better if we make it a bit taller, so we divide by 3 instead.
+    val height = width / if (piece == Piece.I) 3 else 2
     val placeable = measurables.first().measure(Constraints.fixed(width, height))
     layout(width, height) {
       placeable.place(0, 0)
