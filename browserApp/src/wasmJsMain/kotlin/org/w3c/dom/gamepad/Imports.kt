@@ -31,6 +31,7 @@ package org.w3c.dom.gamepad
 external interface Gamepad : JsAny {
   val id: String
   val buttons: JsArray<GamepadButton>
+  val axes: JsArray<JsNumber>
 }
 
 external interface GamepadButton : JsAny {

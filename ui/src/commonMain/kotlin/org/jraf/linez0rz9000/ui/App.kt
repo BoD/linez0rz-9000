@@ -185,6 +185,16 @@ fun App(engine: Engine) {
           fontFamily = workbenchFontFamily,
         )
 
+        // Held piece
+        if (heldPiece != null) {
+          Spacer(modifier = Modifier.size(16.dp))
+          Piece(
+            piece = heldPiece!!.piece,
+            color = pieceColor(state),
+          )
+          Spacer(modifier = Modifier.size(16.dp))
+        }
+
         Spacer(modifier = Modifier.weight(1F))
 
         // Next pieces
@@ -194,16 +204,6 @@ fun App(engine: Engine) {
         )
 
         Spacer(modifier = Modifier.weight(1F))
-
-        // Held piece
-        if (heldPiece != null) {
-          Piece(
-            piece = heldPiece!!.piece,
-            color = debrisColor(state),
-          )
-
-          Spacer(modifier = Modifier.size(8.dp))
-        }
       }
     }
 

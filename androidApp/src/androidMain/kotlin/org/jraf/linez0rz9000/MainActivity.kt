@@ -126,7 +126,8 @@ class MainActivity : ComponentActivity() {
         true
       }
 
-      KeyEvent.KEYCODE_BUTTON_SELECT,
+      KeyEvent.KEYCODE_BUTTON_R1,
+      KeyEvent.KEYCODE_BUTTON_R2,
         -> {
         viewModel.engine.value?.actionHandler?.onHoldPressed()
         true

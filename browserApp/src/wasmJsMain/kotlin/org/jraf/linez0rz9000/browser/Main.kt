@@ -171,47 +171,84 @@ fun main() {
     }
 
     LaunchedEffect(Unit) {
-      val pressedButtonIndexes = mutableSetOf<Int>()
+      val pressedButtons = mutableSetOf<Int>()
       while (true) {
         // Polling at ~60Hz
         delay(16.milliseconds)
-        val gamepad = getGamepads().get(0) ?: continue
+        val gamepad = getGamepads()[0] ?: continue
         val newPressedButtons = mutableSetOf<Int>()
         gamepad.buttons.toArray().forEachIndexed { index, button ->
           if (button.pressed) {
-            if (index !in pressedButtonIndexes) {
-              pressedButtonIndexes.add(index)
+            if (index !in pressedButtons) {
+              pressedButtons.add(index)
               newPressedButtons.add(index)
             }
           } else {
-            pressedButtonIndexes.remove(index)
+            pressedButtons.remove(index)
           }
         }
+
+        // Treat axes as buttons:
+        // - 1000: left
+        // - 1001: right
+        // - 1002: up
+        // - 1003: down
+        gamepad.axes.toArray().take(2).forEachIndexed { axis, value ->
+          val axisId1 = 1000 + axis * 2
+          val axisId2 = 1000 + axis * 2 + 1
+          if (value.toDouble() < -.5) {
+            if (axisId1 !in pressedButtons) {
+              pressedButtons.add(axisId1)
+              newPressedButtons.add(axisId1)
+            }
+          } else if (value.toDouble() > .5) {
+            if (axisId2 !in pressedButtons) {
+              pressedButtons.add(axisId2)
+              newPressedButtons.add(axisId2)
+            }
+          } else {
+            pressedButtons.remove(axisId1)
+            pressedButtons.remove(axisId2)
+          }
+        }
+
+        // I wish there was a better way to do this. Alas, it's either a hardcoded list of known devices, or a setting...
+        val invertAB = gamepad.id.contains("8BitDo", ignoreCase = true)
+
         for (newPressedButtonIndexes in newPressedButtons) {
+          // See https://w3c.github.io/gamepad/#remapping
           when (newPressedButtonIndexes) {
             // A
-            0 -> engine.actionHandler.onRotateCounterClockwisePressed()
+            0 -> if (invertAB) {
+              engine.actionHandler.onRotateClockwisePressed()
+            } else {
+              engine.actionHandler.onRotateCounterClockwisePressed()
+            }
 
             // B
-            1 -> engine.actionHandler.onRotateClockwisePressed()
+            1 -> if (invertAB) {
+              engine.actionHandler.onRotateCounterClockwisePressed()
+            } else {
+              engine.actionHandler.onRotateClockwisePressed()
+            }
 
-            // X, RB, RT
-            2, 5, 7 -> engine.actionHandler.onHoldPressed()
+            // RB, RT
+            5, 7 -> engine.actionHandler.onHoldPressed()
 
-            // Y
-            3 -> engine.actionHandler.onPausePressed()
+            // Start, Right stick
+            9, 11 -> engine.actionHandler.onPausePressed()
 
             // Up
-            12 -> engine.actionHandler.onDropPressed()
+            12, 1002 -> engine.actionHandler.onDropPressed()
 
             // Down
-            13 -> engine.actionHandler.onDownPressed()
+            13, 1003 -> engine.actionHandler.onDownPressed()
 
             // Left
-            14 -> engine.actionHandler.onLeftPressed()
+            14, 1000 -> engine.actionHandler.onLeftPressed()
 
             // Right
-            15 -> engine.actionHandler.onRightPressed()
+            15, 1001 -> engine.actionHandler.onRightPressed()
           }
         }
       }
@@ -226,7 +263,7 @@ private fun focusCanvas() {
 
 private fun getGamepads(): JsArray<Gamepad> = js("navigator.getGamepads()")
 
-private fun log(message: String): Unit = println(message)
+private fun logd(message: String): Unit = println(message)
 
-private fun log(message: String, vararg args: JsAny?): Unit =
+private fun logd(message: String, args: JsAny?): Unit =
   js("console.log(message, args)")

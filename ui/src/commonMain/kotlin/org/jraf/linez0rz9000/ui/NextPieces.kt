@@ -46,7 +46,7 @@ fun NextPieces(
   state: Engine.State,
 ) {
   Column(
-    verticalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     for ((index, piece) in nextPieces.reversed().withIndex()) {
       Piece(
