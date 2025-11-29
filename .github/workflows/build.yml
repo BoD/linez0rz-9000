@@ -37,7 +37,7 @@ jobs:
         with:
           repository: BoD/bod.github.io
           path: 'website'
-          token: ${{ github.token }}
+          token: ${{ secrets.WEBSITE_GITHUB_TOKEN }}
 
       - name: Copy distribution to website
         run: |
