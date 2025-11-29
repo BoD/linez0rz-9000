@@ -32,8 +32,28 @@ jobs:
           :desktopApp:package
           :browserApp:wasmJsBrowserDistribution
 
-      - name: Archive distribution
-        uses: actions/upload-artifact@v5
+      - name: Checkout website
+        uses: actions/checkout@v6
         with:
-          path: build/prodDist
-          name: prodDist
+          repository: BoD/bod.github.io
+          path: 'website'
+
+      - name: Copy distribution to website
+        run: |
+          rm -rf website/linez0rz9000
+          mkdir -p website/linez0rz9000
+          cp -r browserApp/build/dist/wasmJs/productionExecutable/ website/linez0rz9000
+
+      - name: Commit and push changes to website
+        run: |
+          cd website
+          git add linez0rz9000
+          git commit -m "Update linez0rz9000" || echo "No changes to commit"
+          git push origin master
+
+
+#      - name: Archive distribution
+#        uses: actions/upload-artifact@v5
+#        with:
+#          path: build/prodDist
+#          name: prodDist
