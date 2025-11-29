@@ -43,7 +43,7 @@ jobs:
         run: |
           rm -rf website/linez0rz9000
           mkdir -p website/linez0rz9000
-          cp -r browserApp/build/dist/wasmJs/productionExecutable/ website/linez0rz9000
+          cp -r browserApp/build/dist/wasmJs/productionExecutable/* website/linez0rz9000/
 
       - name: Commit and push changes to website
         run: |
