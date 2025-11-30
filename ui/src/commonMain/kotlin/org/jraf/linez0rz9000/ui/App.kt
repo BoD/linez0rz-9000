@@ -116,7 +116,6 @@ fun App(engine: Engine) {
         Board(board = board, state = state, backgroundOnly = true)
 
         Column(
-          modifier = Modifier.fillMaxSize(),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Spacer(Modifier.weight(.25F))
