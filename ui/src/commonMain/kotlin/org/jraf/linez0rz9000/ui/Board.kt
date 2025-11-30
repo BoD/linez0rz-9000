@@ -39,7 +39,13 @@ import org.jraf.linez0rz9000.engine.Engine
 import kotlin.math.min
 
 @Composable
-fun Board(board: Board, state: Engine.State) {
+fun Board(
+  board: Board,
+  state: Engine.State,
+  backgroundOnly: Boolean = false,
+) {
+  val boardWidth = board.width
+  val boardHeight = board.height
   Layout(
     content = {
       Canvas(modifier = Modifier.fillMaxSize()) {
@@ -50,41 +56,43 @@ fun Board(board: Board, state: Engine.State) {
 //          style = Stroke(width = 1F),
 //        )
 
-        val boardWidth = board.width
-        val boardHeight = board.height
         // Remove 1 to account for the top/left offsets
         val cellSize = (size.width.toInt() - 1) / boardWidth
         // First row is hidden and row 1 is half shown
         for (y in 1..<boardHeight) {
           for (x in 0..<boardWidth) {
             val cell = board[x, y]
-            drawRect(
-              topLeft = Offset(
-                // Add 1 to account for the top/left offsets
-                x = (1 + cellSize * x).toFloat(),
-                y = (1 + if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
-              ),
-              size = Size(
-                width = (cellSize - 1).toFloat(),
-                height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
-              ),
-              color = when (cell) {
-                Cell.Empty -> emptyColor(state)
+            if (backgroundOnly || cell != Cell.Empty) {
+              drawRect(
+                topLeft = Offset(
+                  // Add 1 to account for the top/left offsets
+                  x = (1 + cellSize * x).toFloat(),
+                  y = (1 + if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
+                ),
+                size = Size(
+                  width = (cellSize - 1).toFloat(),
+                  height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
+                ),
+                color = if (backgroundOnly) {
+                  emptyColor(state)
+                } else {
+                  when (cell) {
+                    Cell.Piece -> pieceColor(state)
 
-                Cell.Piece -> pieceColor(state)
+                    Cell.ShadowPiece -> shadowColor(state)
 
-                Cell.ShadowPiece -> shadowColor(state)
+                    Cell.Debris -> debrisColor(state)
 
-                Cell.Debris -> debrisColor(state)
-              },
-            )
+                    Cell.Empty -> emptyColor(state)
+                  }
+                },
+              )
+            }
           }
         }
       }
     },
   ) { measurables, constraints ->
-    val boardWidth = board.width
-    val boardHeight = board.height
     // First row is hidden and row 1 is half shown
     val aspectRatio = boardWidth.toFloat() / (boardHeight.toFloat() - 1.5F)
     val constraintMaxHeight = constraints.maxHeight

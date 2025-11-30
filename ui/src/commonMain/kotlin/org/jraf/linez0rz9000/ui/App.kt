@@ -113,6 +113,23 @@ fun App(engine: Engine) {
         modifier = Modifier.fillMaxHeight().weight(1f, fill = false),
         contentAlignment = Alignment.Center,
       ) {
+        Board(board = board, state = state, backgroundOnly = true)
+
+        Column(
+          modifier = Modifier.fillMaxSize(),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Spacer(Modifier.weight(.25F))
+          Text(
+            color = countdownTextColor,
+            text = "${if (gameLineCountTo9000 > 0) gameLineCountTo9000 else "0!!!"}",
+            autoSize = TextAutoSize.StepBased(),
+            softWrap = false,
+            fontFamily = workbenchFontFamily,
+          )
+          Spacer(Modifier.weight(1F))
+        }
+
         Board(board = board, state = state)
       }
 
@@ -138,15 +155,6 @@ fun App(engine: Engine) {
           softWrap = false,
           fontFamily = workbenchFontFamily,
         )
-        Spacer(modifier = Modifier.size(2.dp))
-        Text(
-          color = debrisColor(state),
-          text = "${if (gameLineCountTo9000 > 0) gameLineCountTo9000 else "0!!!"}",
-          autoSize = TextAutoSize.StepBased(),
-          softWrap = false,
-          fontFamily = workbenchFontFamily,
-        )
-
         Spacer(modifier = Modifier.size(16.dp))
 
         // Session

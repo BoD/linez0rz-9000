@@ -35,6 +35,7 @@ private val emptyGameOverColor = Color.DarkGray
 
 private val pieceRunningColor = Color.Red
 private val piecePausedGameOverColor = Color.LightGray
+val countdownTextColor = Color.LightGray.copy(alpha = 0.66f)
 
 private const val alphaDecrement = 0.25f
 private val pieceRunningColorAlpha1 = pieceRunningColor.copy(alpha = 1F - alphaDecrement)
