@@ -27,23 +27,11 @@
 
 package org.jraf.linez0rz9000.browser
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusTarget
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import kotlinx.coroutines.delay
@@ -52,6 +40,7 @@ import org.jraf.linez0rz9000.engine.loadEngine
 import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
+import org.jraf.linez0rz9000.ui.KeyHandler
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.gamepad.Gamepad
 import kotlin.time.Duration.Companion.milliseconds
@@ -72,89 +61,16 @@ fun main() {
 
     val state: Engine.State by engine.state.collectAsState()
 
-    val focusRequester = remember { FocusRequester() }
     App(engine)
 
-    // Key event handling
-    Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .focusRequester(focusRequester)
-        .focusTarget()
-        .onKeyEvent { keyEvent ->
-          if (keyEvent.type != KeyEventType.KeyDown) {
-            false
-          } else {
-            when (keyEvent.key) {
-              Key.DirectionLeft,
-              Key.E,
-                -> {
-                engine.actionHandler.onLeftPressed()
-                true
-              }
-
-              Key.DirectionRight,
-              Key.F,
-                -> {
-                engine.actionHandler.onRightPressed()
-                true
-              }
-
-              Key.Spacebar,
-              Key.C,
-                -> {
-                engine.actionHandler.onDropPressed()
-                true
-              }
-
-              Key.DirectionDown,
-              Key.D,
-                -> {
-                engine.actionHandler.onDownPressed()
-                true
-              }
-
-              Key.DirectionUp,
-              Key.X,
-              Key.G,
-              Key.H,
-                -> {
-                engine.actionHandler.onRotateClockwisePressed()
-                true
-              }
-
-              Key.Z,
-              Key.J,
-              Key.I,
-              Key.ShiftRight,
-                -> {
-                engine.actionHandler.onRotateCounterClockwisePressed()
-                true
-              }
-
-              Key.P,
-              Key.O,
-                -> {
-                engine.actionHandler.onPausePressed()
-                true
-              }
-
-              Key.ShiftLeft,
-                -> {
-                engine.actionHandler.onHoldPressed()
-                true
-              }
-
-              else -> {
-                false
-              }
-            }
-          }
-        },
+    KeyHandler(
+      engine = engine,
+      gamepadMode = false,
+      gamepadInvertAB = false,
     )
 
+    // The canvas needs to be focused. Not sure why this is needed - looks like a Compose for Web bug?
     LaunchedEffect(state) {
-      focusRequester.requestFocus()
       focusCanvas()
     }
 
@@ -235,8 +151,8 @@ fun main() {
             // RB, RT
             5, 7 -> engine.actionHandler.onHoldPressed()
 
-            // Start, Right stick
-            9, 11 -> engine.actionHandler.onPausePressed()
+            // Select, Start, Right stick
+            8, 9, 11 -> engine.actionHandler.onPausePressed()
 
             // Up
             12, 1002 -> engine.actionHandler.onDropPressed()
@@ -257,7 +173,6 @@ fun main() {
 }
 
 private fun focusCanvas() {
-  // TODO Not sure why this is needed - looks like a Compose for Web bug?
   (document.body!!.shadowRoot!!.querySelectorAll("canvas").item(0) as HTMLElement).focus()
 }
 

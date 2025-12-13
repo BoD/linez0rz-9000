@@ -25,9 +25,7 @@
 
 package org.jraf.linez0rz9000
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -40,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.jraf.linez0rz9000.ui.App
+import org.jraf.linez0rz9000.ui.KeyHandler
 
 class MainActivity : ComponentActivity() {
   private val viewModel: MainViewModel by viewModels()
@@ -53,7 +52,13 @@ class MainActivity : ComponentActivity() {
       if (engine != null) {
         Scaffold(containerColor = Color.Transparent) { contentPadding ->
           Box(modifier = Modifier.padding(contentPadding)) {
-            App(engine!!)
+            val engine = engine!!
+            App(engine)
+            KeyHandler(
+              engine = engine,
+              gamepadMode = gamepadPresent,
+              gamepadInvertAB = invertAB,
+            )
           }
         }
       }
@@ -64,78 +69,5 @@ class MainActivity : ComponentActivity() {
     super.onPause()
     viewModel.pause()
     viewModel.saveEngineState()
-  }
-
-  @SuppressLint("RestrictedApi")
-  override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-    if (event.action != KeyEvent.ACTION_DOWN) {
-      return super.dispatchKeyEvent(event)
-    }
-
-    return when (event.keyCode) {
-      KeyEvent.KEYCODE_DPAD_LEFT,
-      KeyEvent.KEYCODE_E,
-        -> {
-        viewModel.engine.value?.actionHandler?.onLeftPressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_RIGHT,
-      KeyEvent.KEYCODE_F,
-        -> {
-        viewModel.engine.value?.actionHandler?.onRightPressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_UP,
-      KeyEvent.KEYCODE_C,
-        -> {
-        viewModel.engine.value?.actionHandler?.onDropPressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_DOWN,
-      KeyEvent.KEYCODE_D,
-        -> {
-        viewModel.engine.value?.actionHandler?.onDownPressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_BUTTON_A,
-      KeyEvent.KEYCODE_BUTTON_X,
-      KeyEvent.KEYCODE_G,
-      KeyEvent.KEYCODE_H,
-        -> {
-        viewModel.engine.value?.actionHandler?.onRotateClockwisePressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_BUTTON_B,
-      KeyEvent.KEYCODE_BUTTON_Y,
-      KeyEvent.KEYCODE_J,
-      KeyEvent.KEYCODE_I,
-        -> {
-        viewModel.engine.value?.actionHandler?.onRotateCounterClockwisePressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_BUTTON_START,
-      KeyEvent.KEYCODE_O,
-        -> {
-        viewModel.engine.value?.actionHandler?.onPausePressed()
-        true
-      }
-
-      KeyEvent.KEYCODE_BUTTON_R1,
-      KeyEvent.KEYCODE_BUTTON_R2,
-        -> {
-        viewModel.engine.value?.actionHandler?.onHoldPressed()
-        true
-      }
-
-      else -> {
-        super.dispatchKeyEvent(event)
-      }
-    }
   }
 }

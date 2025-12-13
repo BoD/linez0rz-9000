@@ -32,10 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -44,6 +40,7 @@ import org.jraf.linez0rz9000.engine.loadEngine
 import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
+import org.jraf.linez0rz9000.ui.KeyHandler
 
 fun main() {
   val storage = Storage("${System.getProperty("user.home")}/.linez0rz9000/storage.preferences_pb")
@@ -59,76 +56,6 @@ fun main() {
         exitApplication()
       },
       title = "Linez0rz $gameLineCountTo9000",
-      onKeyEvent = { keyEvent ->
-        if (keyEvent.type != KeyEventType.KeyDown) {
-          false
-        } else {
-          when (keyEvent.key) {
-            Key.DirectionLeft,
-            Key.E,
-              -> {
-              engine.actionHandler.onLeftPressed()
-              true
-            }
-
-            Key.DirectionRight,
-            Key.F,
-              -> {
-              engine.actionHandler.onRightPressed()
-              true
-            }
-
-            Key.Spacebar,
-            Key.C,
-              -> {
-              engine.actionHandler.onDropPressed()
-              true
-            }
-
-            Key.DirectionDown,
-            Key.D,
-              -> {
-              engine.actionHandler.onDownPressed()
-              true
-            }
-
-            Key.DirectionUp,
-            Key.X,
-            Key.G,
-            Key.H,
-              -> {
-              engine.actionHandler.onRotateClockwisePressed()
-              true
-            }
-
-            Key.Z,
-            Key.J,
-            Key.I,
-            Key.ShiftRight,
-              -> {
-              engine.actionHandler.onRotateCounterClockwisePressed()
-              true
-            }
-
-            Key.P,
-            Key.O,
-              -> {
-              engine.actionHandler.onPausePressed()
-              true
-            }
-
-            Key.ShiftLeft,
-              -> {
-              engine.actionHandler.onHoldPressed()
-              true
-            }
-
-            else -> {
-              false
-            }
-          }
-        }
-      },
     ) {
       LaunchedEffect(LocalWindowInfo.current.isWindowFocused) {
         storage.saveEngineState(engine = engine)
@@ -140,6 +67,11 @@ fun main() {
           .fillMaxSize(),
       ) {
         App(engine)
+        KeyHandler(
+          engine = engine,
+          gamepadMode = false,
+          gamepadInvertAB = false,
+        )
       }
     }
   }
