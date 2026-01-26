@@ -37,8 +37,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
 import org.jraf.linez0rz9000.ui.App
 import org.jraf.linez0rz9000.ui.KeyHandler
+import org.jraf.linez0rz9000.ui.KeyHandlerConfiguration
+import org.jraf.linez0rz9000.ui.KeyboardKeyHandlerConfiguration
 
 class MainActivity : ComponentActivity() {
   private val viewModel: MainViewModel by viewModels()
@@ -56,8 +59,7 @@ class MainActivity : ComponentActivity() {
             App(engine)
             KeyHandler(
               engine = engine,
-              gamepadMode = gamepadPresent,
-              gamepadInvertAB = invertAB,
+              configuration = keyHandlerConfiguration,
             )
           }
         }
@@ -70,4 +72,19 @@ class MainActivity : ComponentActivity() {
     viewModel.pause()
     viewModel.saveEngineState()
   }
+}
+
+private val keyHandlerConfiguration = if (gamepadPresent) {
+  KeyHandlerConfiguration(
+    left = setOf(Key.DirectionLeft),
+    right = setOf(Key.DirectionRight),
+    down = setOf(Key.DirectionDown),
+    drop = setOf(Key.DirectionUp),
+    rotateClockwise = if (invertAB) setOf(Key.ButtonA) else setOf(Key.ButtonB),
+    rotateCounterClockwise = if (invertAB) setOf(Key.ButtonB) else setOf(Key.ButtonA),
+    hold = setOf(Key.ButtonX, Key.ButtonY, Key.ButtonR1, Key.ButtonR2),
+    pause = setOf(Key.ButtonSelect, Key.ButtonStart),
+  )
+} else {
+  KeyboardKeyHandlerConfiguration
 }

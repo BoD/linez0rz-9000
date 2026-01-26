@@ -41,6 +41,7 @@ import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
 import org.jraf.linez0rz9000.ui.KeyHandler
+import org.jraf.linez0rz9000.ui.KeyboardKeyHandlerConfiguration
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.gamepad.Gamepad
 import kotlin.time.Duration.Companion.milliseconds
@@ -65,8 +66,7 @@ fun main() {
 
     KeyHandler(
       engine = engine,
-      gamepadMode = false,
-      gamepadInvertAB = false,
+      configuration = KeyboardKeyHandlerConfiguration,
     )
 
     // The canvas needs to be focused. Not sure why this is needed - looks like a Compose for Web bug?

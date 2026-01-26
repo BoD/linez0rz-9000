@@ -41,6 +41,7 @@ import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
 import org.jraf.linez0rz9000.ui.KeyHandler
+import org.jraf.linez0rz9000.ui.KeyboardKeyHandlerConfiguration
 
 fun main() {
   val storage = Storage("${System.getProperty("user.home")}/.linez0rz9000/storage.preferences_pb")
@@ -69,8 +70,7 @@ fun main() {
         App(engine)
         KeyHandler(
           engine = engine,
-          gamepadMode = false,
-          gamepadInvertAB = false,
+          configuration = KeyboardKeyHandlerConfiguration,
         )
       }
     }
