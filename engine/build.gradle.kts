@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.kotlin.multiplatform)
 }
 
 // Generate a Version.kt file with a constant for the version name
@@ -24,6 +24,7 @@ val generateVersionKtTask = tasks.register("generateVersionKt") {
 
 kotlin {
   jvm()
+
   @OptIn(ExperimentalWasmDsl::class)
   wasmJs {
     browser()

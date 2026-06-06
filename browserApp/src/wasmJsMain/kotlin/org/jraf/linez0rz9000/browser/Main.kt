@@ -42,7 +42,6 @@ import org.jraf.linez0rz9000.engine.storage.Storage
 import org.jraf.linez0rz9000.ui.App
 import org.jraf.linez0rz9000.ui.KeyHandler
 import org.jraf.linez0rz9000.ui.KeyboardKeyHandlerConfiguration
-import org.w3c.dom.HTMLElement
 import org.w3c.dom.gamepad.Gamepad
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -68,11 +67,6 @@ fun main() {
       engine = engine,
       configuration = KeyboardKeyHandlerConfiguration,
     )
-
-    // The canvas needs to be focused. Not sure why this is needed - looks like a Compose for Web bug?
-    LaunchedEffect(state) {
-      focusCanvas()
-    }
 
     LaunchedEffect(Unit) {
       // Save the storage at regular intervals
@@ -172,13 +166,4 @@ fun main() {
   }
 }
 
-private fun focusCanvas() {
-  (document.body!!.shadowRoot!!.querySelectorAll("canvas").item(0) as HTMLElement).focus()
-}
-
 private fun getGamepads(): JsArray<Gamepad> = js("navigator.getGamepads()")
-
-private fun logd(message: String): Unit = println(message)
-
-private fun logd(message: String, args: JsAny?): Unit =
-  js("console.log(message, args)")
