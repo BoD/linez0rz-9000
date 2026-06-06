@@ -1,28 +1,9 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.android.build.gradle.ProguardFiles.getDefaultProguardFile
 
 plugins {
-  alias(libs.plugins.kotlinMultiplatform)
-  alias(libs.plugins.androidApplication)
+  alias(libs.plugins.android.application)
   alias(libs.plugins.composeMultiplatform)
-  alias(libs.plugins.composeCompiler)
-}
-
-kotlin {
-  androidTarget {
-    compilerOptions {
-      jvmTarget.set(JvmTarget.JVM_11)
-    }
-  }
-
-  sourceSets {
-    androidMain.dependencies {
-      implementation(compose.material3)
-      implementation(compose.preview)
-      implementation(libs.androidx.activity.compose)
-
-      implementation(project(":ui"))
-    }
-  }
+  alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -60,7 +41,7 @@ android {
     getByName("release") {
       isMinifyEnabled = true
       isShrinkResources = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt", layout.buildDirectory), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -72,5 +53,11 @@ android {
 }
 
 dependencies {
-  debugImplementation(compose.uiTooling)
+  implementation(libs.composeMultiplatform.material3)
+  implementation(libs.composeMultiplatform.ui.tooling.preview)
+  implementation(libs.androidx.activity.compose)
+
+  implementation(project(":ui"))
+
+  debugImplementation(libs.composeMultiplatform.ui.tooling)
 }

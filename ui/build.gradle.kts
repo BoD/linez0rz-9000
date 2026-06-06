@@ -3,16 +3,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  alias(libs.plugins.kotlinMultiplatform)
-  alias(libs.plugins.androidLibrary)
+  alias(libs.plugins.kotlin.multiplatform)
+  alias(libs.plugins.android.kmp.library)
   alias(libs.plugins.composeMultiplatform)
-  alias(libs.plugins.composeCompiler)
-  alias(libs.plugins.composeHotReload)
+  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.composeMultiplatform.hotReload)
 }
 
 kotlin {
   jvm()
-  androidTarget()
+
   @OptIn(ExperimentalWasmDsl::class)
   wasmJs {
     browser()
@@ -21,25 +21,29 @@ kotlin {
     }
   }
 
+  android {
+    namespace = "org.jraf.linez0rz9000.ui"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    androidResources {
+      enable = true
+    }
+  }
+
   sourceSets {
     commonMain {
       dependencies {
-        api(compose.runtime)
-        api(compose.foundation)
-        api(compose.material3)
-        api(compose.ui)
-        implementation(compose.components.resources)
-        implementation(compose.components.uiToolingPreview)
+        api(libs.composeMultiplatform.runtime)
+        api(libs.composeMultiplatform.foundation)
+        api(libs.composeMultiplatform.material3)
+        api(libs.composeMultiplatform.ui)
+        implementation(libs.composeMultiplatform.components.resources)
+        implementation(libs.composeMultiplatform.ui.tooling.preview)
 
         api(project(":engine"))
       }
     }
   }
-}
-
-android {
-  namespace = "org.jraf.linez0rz9000.ui"
-  compileSdk = libs.versions.android.compileSdk.get().toInt()
 }
 
 tasks.withType<KotlinCompile>().all {

@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.composeMultiplatform)
-  alias(libs.plugins.composeCompiler)
-  alias(libs.plugins.composeHotReload)
+  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.composeMultiplatform.hotReload)
 }
 
 kotlin {

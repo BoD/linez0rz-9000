@@ -267,7 +267,6 @@ private fun GameControlsPanel(
             when (state) {
               is Engine.State.Paused -> engine.resume()
               is Engine.State.GameOver -> engine.restart()
-              else -> throw IllegalStateException()
             }
           },
         ) {
@@ -275,7 +274,6 @@ private fun GameControlsPanel(
             when (state) {
               is Engine.State.Paused -> "Resume"
               is Engine.State.GameOver -> "Play again"
-              else -> throw IllegalStateException()
             },
           )
         }
