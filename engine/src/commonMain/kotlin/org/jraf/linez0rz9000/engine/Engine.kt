@@ -270,9 +270,7 @@ class Engine {
 
     override fun onDropPressed() {
       if (_state.value != State.Running) return
-      while (pieceCanGo((_piece.value.shiftedDown()))) {
-        movePieceDown()
-      }
+      _piece.value = shadowPiece(_piece.value)
       scheduler.schedule(Duration.ZERO) {
         gameLoop()
       }
