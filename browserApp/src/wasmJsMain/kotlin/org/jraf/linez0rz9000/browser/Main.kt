@@ -31,10 +31,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.loadEngine
 import org.jraf.linez0rz9000.engine.saveEngineState
@@ -43,11 +44,10 @@ import org.jraf.linez0rz9000.ui.App
 import org.jraf.linez0rz9000.ui.KeyHandler
 import org.jraf.linez0rz9000.ui.KeyboardKeyHandlerConfiguration
 import org.w3c.dom.gamepad.Gamepad
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
-  @OptIn(ExperimentalComposeUiApi::class)
   ComposeViewport {
     val storage = Storage(null)
     val maybeEngine by produceState<Engine?>(initialValue = null) {
@@ -59,8 +59,6 @@ fun main() {
     val engine = maybeEngine ?: return@ComposeViewport
     val gameLineCountTo9000: Int by engine.gameLineCountTo9000.collectAsState()
 
-    val state: Engine.State by engine.state.collectAsState()
-
     App(engine)
 
     KeyHandler(
@@ -71,7 +69,7 @@ fun main() {
     LaunchedEffect(Unit) {
       // Save the storage at regular intervals
       while (true) {
-        delay(2.seconds)
+        delay(5.seconds)
         storage.saveEngineState(engine = engine)
       }
     }
@@ -83,8 +81,7 @@ fun main() {
     LaunchedEffect(Unit) {
       val pressedButtons = mutableSetOf<Int>()
       while (true) {
-        // Polling at ~60Hz
-        delay(16.milliseconds)
+        awaitAnimationFrame()
         val gamepad = getGamepads()[0] ?: continue
         val newPressedButtons = mutableSetOf<Int>()
         gamepad.buttons.toArray().forEachIndexed { index, button ->
@@ -164,6 +161,11 @@ fun main() {
       }
     }
   }
+}
+
+private suspend fun awaitAnimationFrame() = suspendCancellableCoroutine { continuation ->
+  val frameId = window.requestAnimationFrame { continuation.resume(Unit) }
+  continuation.invokeOnCancellation { window.cancelAnimationFrame(frameId) }
 }
 
 private fun getGamepads(): JsArray<Gamepad> = js("navigator.getGamepads()")
