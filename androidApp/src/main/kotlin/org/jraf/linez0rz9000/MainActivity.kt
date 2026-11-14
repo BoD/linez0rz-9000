@@ -53,9 +53,9 @@ class MainActivity : ComponentActivity() {
     setContent {
       val engine by viewModel.engine.collectAsState()
       if (engine != null) {
+        val engine = engine!!
         Scaffold(containerColor = Color.Transparent) { contentPadding ->
           Box(modifier = Modifier.padding(contentPadding)) {
-            val engine = engine!!
             App(engine)
             KeyHandler(
               engine = engine,
@@ -67,10 +67,28 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    requestMaxRefreshRate()
+  }
+
   override fun onPause() {
     super.onPause()
     viewModel.pause()
     viewModel.saveEngineState()
+  }
+
+  private fun requestMaxRefreshRate() {
+    val display = window.decorView.display ?: return
+    val currentMode = display.mode
+    val preferredRefreshRate = display.supportedModes
+      .filter { it.physicalWidth == currentMode.physicalWidth && it.physicalHeight == currentMode.physicalHeight }
+      .maxOfOrNull { it.refreshRate } ?: currentMode.refreshRate
+    val attributes = this.window.attributes
+    if (attributes.preferredRefreshRate != preferredRefreshRate) {
+      attributes.preferredRefreshRate = preferredRefreshRate
+      this.window.attributes = attributes
+    }
   }
 }
 

@@ -26,69 +26,59 @@
 package org.jraf.linez0rz9000
 
 import android.annotation.SuppressLint
+import android.graphics.Canvas
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.os.Trace
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.ComponentActivity
-import androidx.annotation.RequiresApi
+import androidx.activity.enableEdgeToEdge
 
 class TestActivity : ComponentActivity() {
   private lateinit var myView: MyView
 
-  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge()
     super.onCreate(savedInstanceState)
     myView = MyView(this)
-    println("invertAB=$invertAB")
     setContentView(myView)
   }
 
   @SuppressLint("RestrictedApi")
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-    if (event.action != KeyEvent.ACTION_DOWN) {
+    if (event.keyCode != KeyEvent.KEYCODE_DPAD_LEFT && event.keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) {
       return super.dispatchKeyEvent(event)
     }
 
-    myView.setBackgroundColor(Color.WHITE)
-    myView.postDelayed(
-      {
-        myView.setBackgroundColor(Color.BLACK)
-      },
-      16,
-    )
+    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+      val eventAgeMs = SystemClock.uptimeMillis() - event.eventTime
+      Trace.beginSection("Test key ${KeyEvent.keyCodeToString(event.keyCode)} age=${eventAgeMs}ms")
+      try {
+        myView.toggle()
+      } finally {
+        Trace.endSection()
+      }
+    }
     return true
-
   }
 }
 
 private class MyView(context: android.content.Context) : View(context) {
-  init {
-    isFocusable = true
-    isFocusableInTouchMode = true
+  private var pressCount = 0
+
+  fun toggle() {
+    pressCount++
+    invalidate()
   }
 
-//  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//    setBackgroundColor(Color.WHITE)
-//    postDelayed(
-//      {
-//        setBackgroundColor(Color.BLACK)
-//      },
-//      16,
-//    )
-//    return true
-//  }
-
-//  override fun onGenericMotionEvent(event: MotionEvent?): Boolean {
-//    setBackgroundColor(if (white) Color.WHITE else Color.BLACK)
-//    white = !white
-//    return true
-//  }
-
-//  override fun onTouchEvent(event: MotionEvent?): Boolean {
-//    setBackgroundColor(if (white) Color.WHITE else Color.BLACK)
-//    white = !white
-//    return true
-//  }
+  override fun onDraw(canvas: Canvas) {
+    Trace.beginSection("Test draw #$pressCount")
+    try {
+      canvas.drawColor(if (pressCount % 2 == 0) Color.BLACK else Color.WHITE)
+    } finally {
+      Trace.endSection()
+    }
+  }
 }

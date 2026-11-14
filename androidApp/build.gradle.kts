@@ -50,6 +50,13 @@ android {
       )
       signingConfig = signingConfigs.getByName("release")
     }
+
+    create("profiling") {
+      initWith(getByName("release"))
+      applicationIdSuffix = ".profiling"
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("release")
+    }
   }
 
   compileOptions {
