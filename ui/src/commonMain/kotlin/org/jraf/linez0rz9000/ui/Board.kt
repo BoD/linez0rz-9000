@@ -28,9 +28,12 @@ package org.jraf.linez0rz9000.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import org.jraf.linez0rz9000.engine.Board
@@ -39,59 +42,34 @@ import org.jraf.linez0rz9000.engine.Engine
 import kotlin.math.min
 
 @Composable
-fun Board(
-  board: Board,
-  state: Engine.State,
-  backgroundOnly: Boolean = false,
-) {
-  val boardWidth = board.width
-  val boardHeight = board.height
-  Layout(
-    content = {
-      Canvas(modifier = Modifier.fillMaxSize()) {
-//        // Debug: draw an outline rectangle of the whole canvas
-//        drawRect(
-//          color = Color.Red,
-//          size = Size(size.width - 1, size.height - 1),
-//          style = Stroke(width = 1F),
-//        )
+internal fun BoardBackground(width: Int, height: Int, color: Color) {
+  BoardCanvas(width, height) {
+    drawCells(width, height) { _, _ -> color }
+  }
+}
 
-        // Remove 1 to account for the top/left offsets
-        val cellSize = (size.width.toInt() - 1) / boardWidth
-        // First row is hidden and row 1 is half shown
-        for (y in 1..<boardHeight) {
-          for (x in 0..<boardWidth) {
-            val cell = board[x, y]
-            if (backgroundOnly || cell != Cell.Empty) {
-              drawRect(
-                topLeft = Offset(
-                  // Add 1 to account for the top/left offsets
-                  x = (1 + cellSize * x).toFloat(),
-                  y = (1 + if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
-                ),
-                size = Size(
-                  width = (cellSize - 1).toFloat(),
-                  height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
-                ),
-                color = if (backgroundOnly) {
-                  emptyColor(state)
-                } else {
-                  when (cell) {
-                    Cell.Piece -> pieceColor(state)
-
-                    Cell.ShadowPiece -> shadowColor(state)
-
-                    Cell.Debris -> debrisColor(state)
-
-                    Cell.Empty -> emptyColor(state)
-                  }
-                },
-              )
-            }
-          }
-        }
+@Composable
+internal fun Board(width: Int, height: Int, board: State<Board>, state: Engine.State) {
+  val activeColor = pieceColor(state)
+  val ghostColor = shadowColor(state)
+  val lockedColor = debrisColor(state)
+  BoardCanvas(width, height) {
+    val snapshot = board.value
+    drawCells(width, height) { x, y ->
+      when (snapshot[x, y]) {
+        Cell.Piece -> activeColor
+        Cell.ShadowPiece -> ghostColor
+        Cell.Debris -> lockedColor
+        Cell.Empty -> null
       }
-    },
+    }
+  }
+}
+
+@Composable
+private fun BoardCanvas(boardWidth: Int, boardHeight: Int, onDraw: DrawScope.() -> Unit) {
+  Layout(
+    content = { Canvas(modifier = Modifier.fillMaxSize(), onDraw = onDraw) },
   ) { measurables, constraints ->
     // First row is hidden and row 1 is half shown
     val aspectRatio = boardWidth.toFloat() / (boardHeight.toFloat() - 1.5F)
@@ -126,3 +104,24 @@ fun Board(
   }
 }
 
+private inline fun DrawScope.drawCells(width: Int, height: Int, colorAt: (Int, Int) -> Color?) {
+  // Remove 1 to account for the top/left offsets.
+  val cellSize = (size.width.toInt() - 1) / width
+  // First row is hidden and row 1 is half shown.
+  for (y in 1..<height) {
+    for (x in 0..<width) {
+      val color = colorAt(x, y) ?: continue
+      drawRect(
+        topLeft = Offset(
+          x = (1 + cellSize * x).toFloat(),
+          y = (1 + if (y == 1) 0 else cellSize * (y - 2) + cellSize / 2).toFloat(),
+        ),
+        size = Size(
+          width = (cellSize - 1).toFloat(),
+          height = (if (y == 1) cellSize / 2 - 1 else cellSize - 1).toFloat(),
+        ),
+        color = color,
+      )
+    }
+  }
+}

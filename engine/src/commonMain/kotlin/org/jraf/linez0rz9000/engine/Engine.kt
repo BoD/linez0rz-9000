@@ -152,9 +152,10 @@ class Engine {
       board
     } else {
       val shadowPiece = shadowPiece(piece)
-      board
-        .withPiece(shadowPiece, Cell.ShadowPiece)
-        .withPiece(piece, Cell.Piece)
+      board.toMutableBoard().apply {
+        placePiece(shadowPiece, Cell.ShadowPiece)
+        placePiece(piece, Cell.Piece)
+      }
     }
   }
     .stateIn(
@@ -269,9 +270,7 @@ class Engine {
 
     override fun onDropPressed() {
       if (_state.value != State.Running) return
-      while (pieceCanGo((_piece.value.shiftedDown()))) {
-        movePieceDown()
-      }
+      _piece.value = shadowPiece(_piece.value)
       scheduler.schedule(Duration.ZERO) {
         gameLoop()
       }
@@ -485,13 +484,15 @@ class Engine {
 
   private fun Board.withPiece(piece: PieceWithPosition, cell: Cell): Board {
     return toMutableBoard().apply {
-      for (x in 0..<4) {
-        for (y in 0..<4) {
-          if (piece.isFilled(x, y)) {
-            if (piece.y + y >= 0) {
-              this[piece.x + x, piece.y + y] = cell
-            }
-          }
+      placePiece(piece, cell)
+    }
+  }
+
+  private fun MutableBoard.placePiece(piece: PieceWithPosition, cell: Cell) {
+    for (x in 0..<4) {
+      for (y in 0..<4) {
+        if (piece.y + y >= 0 && piece.isFilled(x, y)) {
+          this[piece.x + x, piece.y + y] = cell
         }
       }
     }

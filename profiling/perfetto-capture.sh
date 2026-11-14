@@ -9,6 +9,7 @@ data_sources {
       atrace_apps: "org.jraf.linez0rz9000.profiling"
       atrace_categories: "view"
       atrace_categories: "gfx"
+      atrace_categories: "input"
       ftrace_events: "sched/sched_switch"
       ftrace_events: "sched/sched_wakeup"
     }

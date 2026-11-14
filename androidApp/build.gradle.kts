@@ -44,6 +44,9 @@ android {
     getByName("release") {
       isMinifyEnabled = true
       isShrinkResources = true
+      optimization {
+        enable = true
+      }
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt", layout.buildDirectory),
         "proguard-rules.pro"

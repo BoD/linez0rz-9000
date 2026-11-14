@@ -28,24 +28,47 @@ package org.jraf.linez0rz9000
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.loadEngine
 import org.jraf.linez0rz9000.engine.saveEngineState
 import org.jraf.linez0rz9000.engine.storage.Storage
+import java.io.File
+
+private const val STORAGE_FILE_NAME = "storage.preferences_pb"
 
 class MainViewModel(application: Application) : AndroidViewModel(application = application) {
-  private val storage = Storage(getApplication<Application>().filesDir.resolve("storage.preferences_pb").absolutePath)
+  private val storage by lazy {
+    Storage(getApplication<Application>().filesDir.resolve(STORAGE_FILE_NAME).absolutePath)
+  }
 
   val engine: StateFlow<Engine?> = flow {
+    importBackupFromExternalStorage()
     emit(
       storage.loadEngine(),
     )
   }.stateIn(viewModelScope, started = SharingStarted.Lazily, initialValue = null)
+
+  private suspend fun importBackupFromExternalStorage() {
+    withContext(Dispatchers.IO) {
+      val backupFile: File? =
+        getApplication<Application>().getExternalFilesDir(null)?.resolve(STORAGE_FILE_NAME)
+      if (backupFile?.exists() != true) {
+        return@withContext
+      }
+      backupFile.copyTo(
+        target = getApplication<Application>().filesDir.resolve(STORAGE_FILE_NAME),
+        overwrite = true,
+      )
+      backupFile.delete()
+    }
+  }
 
   fun saveEngineState() {
     val engine = engine.value ?: return

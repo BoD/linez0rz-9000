@@ -61,7 +61,6 @@ import kotlinx.coroutines.launch
 import linez0rz_9000.ui.generated.resources.Res
 import linez0rz_9000.ui.generated.resources.Workbench
 import org.jetbrains.compose.resources.Font
-import org.jraf.linez0rz9000.engine.Board
 import org.jraf.linez0rz9000.engine.Engine
 import org.jraf.linez0rz9000.engine.Piece
 import kotlin.time.Duration.Companion.seconds
@@ -70,7 +69,10 @@ import kotlin.time.Duration.Companion.seconds
 fun App(engine: Engine) {
   val workbenchFontFamily = FontFamily(Font(Res.font.Workbench, FontWeight.Normal))
 
-  val board: Board by engine.board.collectAsState()
+  val board = engine.board.collectAsState()
+  // Board dimensions are fixed for the lifetime of the engine.
+  val boardWidth = engine.board.value.width
+  val boardHeight = engine.board.value.height
   val state: Engine.State by engine.state.collectAsState()
   val nextPieces: List<Piece> by engine.nextPieces.collectAsState()
   val heldPiece: Engine.PieceWithPosition? by engine.heldPiece.collectAsState()
@@ -113,7 +115,7 @@ fun App(engine: Engine) {
         modifier = Modifier.fillMaxHeight().weight(1f, fill = false),
         contentAlignment = Alignment.Center,
       ) {
-        Board(board = board, state = state, backgroundOnly = true)
+        BoardBackground(boardWidth, boardHeight, emptyColor(state))
 
         Column(
           horizontalAlignment = Alignment.CenterHorizontally,
@@ -129,7 +131,7 @@ fun App(engine: Engine) {
           Spacer(Modifier.weight(1F))
         }
 
-        Board(board = board, state = state)
+        Board(boardWidth, boardHeight, board, state)
       }
 
       Column(
