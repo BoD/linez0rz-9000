@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.implementation
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -17,7 +18,7 @@ kotlin {
 
     desktopMain.apply {
       dependencies {
-        implementation(compose.desktop.currentOs)
+        implementation(libs.composeMultiplatform.ui)
         implementation(libs.kotlinx.coroutines.swing)
 
         implementation(project(":ui"))

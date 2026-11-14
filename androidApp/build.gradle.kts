@@ -8,8 +8,11 @@ plugins {
 
 android {
   namespace = "org.jraf.linez0rz9000"
-  compileSdk = libs.versions.android.compileSdk.get().toInt()
-
+  compileSdk {
+    version = release(libs.versions.android.compileSdk.major.get().toInt()) {
+      minorApiLevel = libs.versions.android.compileSdk.minor.get().toInt()
+    }
+  }
   defaultConfig {
     applicationId = "org.jraf.linez0rz9000"
     minSdk = libs.versions.android.minSdk.get().toInt()
@@ -41,7 +44,10 @@ android {
     getByName("release") {
       isMinifyEnabled = true
       isShrinkResources = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt", layout.buildDirectory), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt", layout.buildDirectory),
+        "proguard-rules.pro"
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }

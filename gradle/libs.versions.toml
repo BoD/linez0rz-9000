@@ -1,13 +1,14 @@
 [versions]
-agp = "9.2.1"
-android-compileSdk = "37"
+agp = "9.5.1"
+android-compileSdk-major = "37"
+android-compileSdk-minor = "2"
 android-minSdk = "26"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
-composeMultiplatform = "1.12.0-alpha02"
-composeHotReload = "1.2.0-alpha02"
-datastore = "1.2.1"
-kotlin = "2.4.0"
+composeMultiplatform = "1.13.0-beta02"
+composeHotReload = "1.3.0-rc01"
+datastore = "1.3.0"
+kotlin = "2.4.21"
 kotlinx-coroutines = "1.11.0"
 kotlinxBrowser = "0.5.0"
 
@@ -20,16 +21,16 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeMultiplatform-hotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 
 [libraries]
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinxBrowser" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
-composeMultiplatform-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
-composeMultiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
-composeMultiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
-composeMultiplatform-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
-composeMultiplatform-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
-composeMultiplatform-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
-composeMultiplatform-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMultiplatform" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
+androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+kotlinx-browser = { group = "org.jetbrains.kotlinx", name = "kotlinx-browser", version.ref = "kotlinxBrowser" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+composeMultiplatform-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
+composeMultiplatform-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+composeMultiplatform-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composeMultiplatform" }
+composeMultiplatform-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "composeMultiplatform" }
+composeMultiplatform-ui-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "composeMultiplatform" }
+composeMultiplatform-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "composeMultiplatform" }
+composeMultiplatform-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMultiplatform" }
