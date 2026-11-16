@@ -26,11 +26,17 @@
 package org.jraf.linez0rz9000.engine
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.random.Random
 
 class NextPieces {
   private val size: Int
 
   private val piecesBuffer: MutableList<Piece>
+
+  private var random = Random(9000)
+
+  internal var count: Int = 0
+    private set
 
   val nextPieces: MutableStateFlow<List<Piece>>
 
@@ -40,22 +46,35 @@ class NextPieces {
     this.nextPieces = MutableStateFlow(piecesBuffer.take(size))
   }
 
-  constructor(pieces: List<Piece>) {
+  constructor(pieces: List<Piece>, count: Int) {
     this.size = pieces.size
-    this.piecesBuffer = pieces.toMutableList().ensureCapacity(size)
-    this.nextPieces = MutableStateFlow(pieces)
+    this.piecesBuffer = mutableListOf<Piece>().ensureCapacity(size)
+    this.nextPieces = MutableStateFlow(piecesBuffer.take(size))
+    repeat(count) {
+      getNextPiece()
+    }
+    this.count = count
   }
 
   internal fun getNextPiece(): Piece {
+    count++
     return piecesBuffer.removeAt(0).also {
       piecesBuffer.ensureCapacity(size)
       nextPieces.value = piecesBuffer.take(size)
     }
   }
 
+  internal fun reset() {
+    count = 0
+    random = Random(9000)
+    piecesBuffer.clear()
+    piecesBuffer.ensureCapacity(size)
+    nextPieces.value = piecesBuffer.take(size)
+  }
+
   private fun MutableList<Piece>.ensureCapacity(nextPiecesSize: Int): MutableList<Piece> = apply {
     if (this.size < nextPiecesSize) {
-      addAll(Piece.values().shuffled())
+      addAll(Piece.values().shuffled(random))
     }
   }
 }

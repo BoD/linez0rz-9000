@@ -63,6 +63,15 @@ private class JvmStorage(private val path: String) : Storage {
     dataStore.edit { it[KEY_NEXT_PIECES] = nextPieces.toStorageString() }
   }
 
+  override suspend fun getPieceCount(): Int? =
+    dataStore.data.map { preferences ->
+      preferences[KEY_PIECE_COUNT]
+    }.first()?.toInt()
+
+  override suspend fun savePieceCount(pieceCount: Int) {
+    dataStore.edit { it[KEY_PIECE_COUNT] = pieceCount.toString() }
+  }
+
   override suspend fun getPieceWithPosition(): Engine.PieceWithPosition? =
     dataStore.data.map { preferences ->
       preferences[KEY_PIECE_WITH_POSITION]?.toPieceWithPosition()
@@ -108,6 +117,7 @@ private class JvmStorage(private val path: String) : Storage {
   companion object {
     private val KEY_BOARD = stringPreferencesKey("board")
     private val KEY_NEXT_PIECES = stringPreferencesKey("nextPieces")
+    private val KEY_PIECE_COUNT = stringPreferencesKey("piecesCount")
     private val KEY_PIECE_WITH_POSITION = stringPreferencesKey("pieceWithPosition")
     private val KEY_HELD_PIECE = stringPreferencesKey("heldPiece")
     private val KEY_LINES = intPreferencesKey("lines")

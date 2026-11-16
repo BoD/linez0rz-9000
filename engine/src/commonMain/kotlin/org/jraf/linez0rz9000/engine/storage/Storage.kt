@@ -38,6 +38,9 @@ interface Storage {
   suspend fun getNextPieces(): List<Piece>?
   suspend fun saveNextPieces(nextPieces: List<Piece>)
 
+  suspend fun getPieceCount(): Int?
+  suspend fun savePieceCount(pieceCount: Int)
+
   suspend fun getPieceWithPosition(): Engine.PieceWithPosition?
   suspend fun savePieceWithPosition(pieceWithPosition: Engine.PieceWithPosition)
 

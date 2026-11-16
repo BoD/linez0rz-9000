@@ -53,6 +53,14 @@ private class WebStorage : Storage {
     localStorage["nextPieces"] = nextPieces.toStorageString()
   }
 
+  override suspend fun getPieceCount(): Int? {
+    return localStorage["pieceCount"]?.toIntOrNull()
+  }
+
+  override suspend fun savePieceCount(pieceCount: Int) {
+    localStorage["pieceCount"] = pieceCount.toString()
+  }
+
   override suspend fun getPieceWithPosition(): Engine.PieceWithPosition? {
     return localStorage["pieceWithPosition"]?.toPieceWithPosition()
   }

@@ -76,6 +76,7 @@ class Engine {
   constructor(
     board: Board,
     nextPieces: List<Piece>,
+    pieceCount: Int,
     pieceWithPosition: PieceWithPosition?,
     heldPiece: PieceWithPosition?,
     lines: Int,
@@ -83,7 +84,7 @@ class Engine {
     delay: Duration = .2.seconds,
   ) : this(
     board = board,
-    nextPieces = NextPieces(nextPieces),
+    nextPieces = NextPieces(pieces = nextPieces, count = pieceCount),
     pieceWithPosition = pieceWithPosition,
     heldPiece = heldPiece,
     lines = lines,
@@ -121,7 +122,7 @@ class Engine {
 
   private val _board: MutableStateFlow<Board>
 
-  private val _nextPieces: NextPieces
+  internal val _nextPieces: NextPieces
   val nextPieces: StateFlow<List<Piece>>
 
   private val _piece: MutableStateFlow<PieceWithPosition>
@@ -384,6 +385,7 @@ class Engine {
   fun restart() {
     if (_state.value != State.GameOver) error("Wrong state: ${_state.value}")
     _board.value = MutableBoard(_board.value.width, _board.value.height)
+    _nextPieces.reset()
     _piece.value = nextPieceWithPosition(_nextPieces.getNextPiece())
     _sessionLineCount.value = 0
     _gameLineCount.value = 0
@@ -503,6 +505,7 @@ class Engine {
 suspend fun Storage.saveEngineState(engine: Engine) {
   saveBoard(engine.board.value)
   saveNextPieces(engine.nextPieces.value)
+  savePieceCount(engine._nextPieces.count)
   savePieceWithPosition(engine.piece.value)
   saveHeldPiece(engine.heldPiece.value)
   saveGameLineCount(engine.gameLineCount.value)
@@ -520,6 +523,7 @@ suspend fun Storage.loadEngine(): Engine {
     Engine(
       board = savedBoard,
       nextPieces = savedNextPieces,
+      pieceCount = getPieceCount() ?: 0,
       pieceWithPosition = savedPieceWithPosition,
       heldPiece = savedHeldPiece,
       lines = savedLines,
